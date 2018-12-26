@@ -11,11 +11,12 @@ class BattleCity(QMainWindow):
         self.initUI()
 
     def initUI(self):
+        self.showFullScreen()
+        self.show()
         self.gameBoard = GameBoard(self)
         self.setCentralWidget(self.gameBoard)
 
-        self.showFullScreen()
-        self.show()
+
 
 
 if __name__ == "__main__":
