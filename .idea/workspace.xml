@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
+<<<<<<< HEAD
     <list default="true" id="182bf75d-7adb-4e5d-b6da-11b94090706a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
+=======
+<<<<<<< HEAD
+    <list default="true" id="182bf75d-7adb-4e5d-b6da-11b94090706a" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/game_board.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/main_window.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/DRS1819-T5-Battle_City.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DRS1819-T5-Battle_City.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
+=======
+    <list default="true" id="182bf75d-7adb-4e5d-b6da-11b94090706a" name="Default Changelist" comment="" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
+>>>>>>> dd07b87af3059c2b74e6edcfec65be4ab7c9b817
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,8 +32,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/move_tanks_demo.py">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
             <state relative-caret-position="119">
+=======
+<<<<<<< HEAD
+            <state relative-caret-position="328">
+              <caret line="82" column="33" selection-start-line="82" selection-start-column="33" selection-end-line="82" selection-end-column="33" />
+=======
+            <state relative-caret-position="221">
+>>>>>>> dd07b87af3059c2b74e6edcfec65be4ab7c9b817
               <caret line="28" column="69" selection-start-line="28" selection-start-column="50" selection-end-line="28" selection-end-column="69" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -28,19 +51,11 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/tank.py">
+<<<<<<< HEAD
+        <entry file="file://$PROJECT_DIR$/req.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/enemy_tank.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+            <state relative-caret-position="34">
+              <caret line="2" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
         </entry>
@@ -48,11 +63,60 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/key_notifier.py">
           <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="277">
+              <caret line="48" column="37" selection-start-line="48" selection-start-column="36" selection-end-line="48" selection-end-column="37" />
+              <folding>
+                <element signature="e#0#63#0" expanded="true" />
+              </folding>
+=======
+        <entry file="file://$PROJECT_DIR$/tank.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="187">
+              <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+<<<<<<< HEAD
+        <entry file="file://$PROJECT_DIR$/main_window.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="85">
+              <caret line="5" column="30" lean-forward="true" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+              <folding>
+                <element signature="e#0#53#0" expanded="true" />
+              </folding>
+=======
+        <entry file="file://$PROJECT_DIR$/enemy_tank.py">
+          <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+            <state relative-caret-position="255">
+              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+=======
+            <state relative-caret-position="238">
+              <caret line="14" column="28" selection-start-line="14" selection-start-column="28" selection-end-line="14" selection-end-column="28" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
+>>>>>>> dd07b87af3059c2b74e6edcfec65be4ab7c9b817
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+<<<<<<< HEAD
+        <entry file="file://$PROJECT_DIR$/game_board.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state>
+              <caret column="34" lean-forward="true" selection-start-column="34" selection-end-column="34" />
+=======
+        <entry file="file://$PROJECT_DIR$/key_notifier.py">
+          <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-119">
               <caret line="20" column="50" selection-start-line="20" selection-start-column="50" selection-end-line="20" selection-end-column="50" />
               <folding>
                 <element signature="e#0#63#0" expanded="true" />
               </folding>
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
             </state>
           </provider>
         </entry>
@@ -73,11 +137,20 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/move_tanks_demo.py" />
+<<<<<<< HEAD
+        <option value="$PROJECT_DIR$/Project Documents/mainWindow.py" />
+        <option value="$PROJECT_DIR$/mainWindow.py" />
+        <option value="$PROJECT_DIR$/req.txt" />
+        <option value="$PROJECT_DIR$/gameBoard.py" />
+        <option value="$PROJECT_DIR$/main_window.py" />
+        <option value="$PROJECT_DIR$/game_board.py" />
+=======
         <option value="$PROJECT_DIR$/key_notifier.py" />
         <option value="$PROJECT_DIR$/Tank.py" />
         <option value="$PROJECT_DIR$/Project Documents/tank.py" />
         <option value="$PROJECT_DIR$/tank.py" />
         <option value="$PROJECT_DIR$/enemy_tank.py" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
       </list>
     </option>
   </component>
@@ -100,6 +173,11 @@
               <item name="DRS1819-T5-Battle_City" type="b2602c69:ProjectViewProjectNode" />
               <item name="DRS1819-T5-Battle_City" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="DRS1819-T5-Battle_City" type="b2602c69:ProjectViewProjectNode" />
+              <item name="DRS1819-T5-Battle_City" type="462c0819:PsiDirectoryNode" />
+              <item name="Project Documents" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -109,7 +187,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../Vezbe/Python/QtDemo" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -131,7 +209,11 @@
       </list>
     </option>
   </component>
+<<<<<<< HEAD
+  <component name="RunManager" selected="Python.main_window">
+=======
   <component name="RunManager" selected="Python.move_tanks_demo">
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="DRS1819-T5-Battle_City" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -154,7 +236,11 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+<<<<<<< HEAD
+    <configuration name="game_board" type="PythonConfigurationType" factoryName="Python" temporary="true">
+=======
     <configuration name="key_notifier" type="PythonConfigurationType" factoryName="Python" temporary="true">
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
       <module name="DRS1819-T5-Battle_City" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -164,7 +250,30 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+<<<<<<< HEAD
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/game_board.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_window" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="DRS1819-T5-Battle_City" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main_window.py" />
+=======
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/key_notifier.py" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -177,6 +286,9 @@
       <module name="DRS1819-T5-Battle_City" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -194,6 +306,8 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_window" />
+        <item itemvalue="Python.game_board" />
         <item itemvalue="Python.move_tanks_demo" />
         <item itemvalue="Python.key_notifier" />
       </list>
@@ -241,9 +355,9 @@
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.329927" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.329927" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
       <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32909605" />
@@ -259,6 +373,16 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/move_tanks_demo.py</url>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Project Documents/README.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
@@ -268,23 +392,75 @@
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
+    <entry file="file://$PROJECT_DIR$/requirements.txt" />
+    <entry file="file://$PROJECT_DIR$/Project Documents/mainWindow.py" />
+    <entry file="file://$PROJECT_DIR$/mainWindow.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="38" selection-start-column="38" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/req.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gameBoard.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="6" lean-forward="true" selection-start-line="2" selection-start-column="6" selection-end-line="2" selection-end-column="7" />
+=======
     <entry file="file://$PROJECT_DIR$/req.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
           <caret line="1" column="18" selection-start-line="1" selection-start-column="18" selection-end-line="1" selection-end-column="18" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/key_notifier.py">
       <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
+        <state relative-caret-position="277">
+          <caret line="48" column="37" selection-start-line="48" selection-start-column="36" selection-end-line="48" selection-end-column="37" />
+=======
         <state relative-caret-position="-119">
+<<<<<<< HEAD
           <caret line="20" column="50" selection-start-line="20" selection-start-column="50" selection-end-line="20" selection-end-column="50" />
+=======
+          <caret line="20" column="50" lean-forward="true" selection-start-line="20" selection-start-column="50" selection-end-line="20" selection-end-column="50" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
+>>>>>>> dd07b87af3059c2b74e6edcfec65be4ab7c9b817
           <folding>
             <element signature="e#0#63#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_bundle/pydev_umd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="197" selection-start-line="197" selection-end-line="197" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Programs/Python/Python37-32/Lib/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="223">
+          <caret line="323" selection-start-line="323" selection-end-line="323" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/move_tanks_demo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="328">
+          <caret line="82" column="33" selection-start-line="82" selection-start-column="33" selection-end-line="82" selection-end-column="33" />
+=======
     <entry file="file://$PROJECT_DIR$/Project Documents/tank.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -299,16 +475,62 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
           <caret line="28" column="69" selection-start-line="28" selection-start-column="50" selection-end-line="28" selection-end-column="69" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/enemy_tank.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
           <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
+=======
+<<<<<<< HEAD
+    <entry file="file://$USER_HOME$/.PyCharmCE2018.3/system/python_stubs/-794621702/PyQt5/QtGui/QPainter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="301" column="8" selection-start-line="301" selection-start-column="8" selection-end-line="301" selection-end-column="8" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2018.3/system/python_stubs/-794621702/PyQt5/QtWidgets/QFrame.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-8">
+          <caret line="151" column="12" lean-forward="true" selection-start-line="151" selection-start-column="12" selection-end-line="151" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/game_board.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret column="34" lean-forward="true" selection-start-column="34" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main_window.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="30" lean-forward="true" selection-start-line="5" selection-start-column="30" selection-end-line="5" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#53#0" expanded="true" />
+          </folding>
+=======
+    <entry file="file://$PROJECT_DIR$/tank.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/enemy_tank.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="28" selection-start-line="14" selection-start-column="28" selection-end-line="14" selection-end-column="28" />
+>>>>>>> 94bc8d944a43a951fe5eed61ef8fd5a47e4057f6
+>>>>>>> dd07b87af3059c2b74e6edcfec65be4ab7c9b817
         </state>
       </provider>
     </entry>
