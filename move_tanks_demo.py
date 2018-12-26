@@ -22,6 +22,7 @@ class SimMoveDemo(QWidget):
         self.label2 = QLabel(self)
 
         self.setWindowState(Qt.WindowMaximized)
+        self.showFullScreen()
         self.__init_ui__()
 
         self.key_notifier = KeyNotifier()
@@ -61,7 +62,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation1, 0))
                 self.label1.setPixmap(pix.transformed(transform))
                 self.label1.orientation = 0
-            self.label1.setGeometry(rec1.x(), rec1.y() - 5, rec1.width(), rec1.height())
+            self.label1.setGeometry(rec1.x(), rec1.y() - 50, rec1.width(), rec1.height())
 
         elif key == Qt.Key_Right:
             if orientation1 != 1:
@@ -69,7 +70,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation1, 1))
                 self.label1.setPixmap(pix.transformed(transform))
                 self.label1.orientation = 1
-            self.label1.setGeometry(rec1.x() + 5, rec1.y(), rec1.width(), rec1.height())
+            self.label1.setGeometry(rec1.x() + 50, rec1.y(), rec1.width(), rec1.height())
 
         elif key == Qt.Key_Down:
             if orientation1 != 2:
@@ -77,7 +78,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation1, 2))
                 self.label1.setPixmap(pix.transformed(transform))
                 self.label1.orientation = 2
-            self.label1.setGeometry(rec1.x(), rec1.y() + 5, rec1.width(), rec1.height())
+            self.label1.setGeometry(rec1.x(), rec1.y() + 50, rec1.width(), rec1.height())
 
         elif key == Qt.Key_Left:
             if orientation1 != 3:
@@ -85,7 +86,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation1, 3))
                 self.label1.setPixmap(pix.transformed(transform))
                 self.label1.orientation = 3
-            self.label1.setGeometry(rec1.x() - 5, rec1.y(), rec1.width(), rec1.height())
+            self.label1.setGeometry(rec1.x() - 50, rec1.y(), rec1.width(), rec1.height())
 
         if key == Qt.Key_W:
             if orientation2 != 0:
@@ -93,7 +94,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation2, 0))
                 self.label2.setPixmap(pix.transformed(transform))
                 self.label2.orientation = 0
-            self.label2.setGeometry(rec2.x(), rec2.y() - 5, rec2.width(), rec2.height())
+            self.label2.setGeometry(rec2.x(), rec2.y() - 50, rec2.width(), rec2.height())
 
         elif key == Qt.Key_D:
             if orientation2 != 1:
@@ -101,7 +102,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation2, 1))
                 self.label2.setPixmap(pix.transformed(transform))
                 self.label2.orientation = 1
-            self.label2.setGeometry(rec2.x() + 5, rec2.y(), rec2.width(), rec2.height())
+            self.label2.setGeometry(rec2.x() + 50, rec2.y(), rec2.width(), rec2.height())
 
         elif key == Qt.Key_S:
             if orientation2 != 2:
@@ -109,7 +110,7 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation2, 2))
                 self.label2.setPixmap(pix.transformed(transform))
                 self.label2.orientation = 2
-            self.label2.setGeometry(rec2.x(), rec2.y() + 5, rec2.width(), rec2.height())
+            self.label2.setGeometry(rec2.x(), rec2.y() + 50, rec2.width(), rec2.height())
 
         elif key == Qt.Key_A:
             if orientation2 != 3:
@@ -117,7 +118,10 @@ class SimMoveDemo(QWidget):
                 transform.rotate(SimMoveDemo.rotation_function(orientation2, 3))
                 self.label2.setPixmap(pix.transformed(transform))
                 self.label2.orientation = 3
-            self.label2.setGeometry(rec2.x() - 5, rec2.y(), rec2.width(), rec2.height())
+            self.label2.setGeometry(rec2.x() - 50, rec2.y(), rec2.width(), rec2.height())
+
+        elif key == Qt.Key_Escape:
+            self.close()
 
     @staticmethod
     def rotation_function(current_position, next_position):
