@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="182bf75d-7adb-4e5d-b6da-11b94090706a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Tank.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/DRS1819-T5-Battle_City.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/DRS1819-T5-Battle_City.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/move_tanks_demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/move_tanks_demo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tank.py" beforeDir="false" afterPath="$PROJECT_DIR$/tank.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -69,6 +66,7 @@
         <option value="$PROJECT_DIR$/move_tanks_demo.py" />
         <option value="$PROJECT_DIR$/key_notifier.py" />
         <option value="$PROJECT_DIR$/Tank.py" />
+        <option value="$PROJECT_DIR$/Project Documents/tank.py" />
         <option value="$PROJECT_DIR$/tank.py" />
       </list>
     </option>
@@ -238,8 +236,8 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info anchor="bottom" id="Terminal" order="11" weight="0.32909605" />
-      <window_info anchor="bottom" id="Python Console" order="12" visible="true" weight="0.32627118" />
+      <window_info anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32909605" />
+      <window_info anchor="bottom" id="Python Console" order="12" weight="0.32627118" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -267,22 +265,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/move_tanks_demo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="28" column="69" selection-start-line="28" selection-start-column="50" selection-end-line="28" selection-end-column="69" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/key_notifier.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-119">
           <caret line="20" column="50" lean-forward="true" selection-start-line="20" selection-start-column="50" selection-end-line="20" selection-end-column="50" />
           <folding>
             <element signature="e#0#63#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Project Documents/tank.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/move_tanks_demo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="28" column="69" selection-start-line="28" selection-start-column="50" selection-end-line="28" selection-end-column="69" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
           </folding>
         </state>
       </provider>
