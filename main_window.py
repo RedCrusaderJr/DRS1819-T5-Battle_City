@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication
 from game_board import GameBoard
 import sys
-
+#from level import Level
 
 class BattleCity(QMainWindow):
 
@@ -20,7 +20,7 @@ class BattleCity(QMainWindow):
             }
         """)
         self.show()
-
+        #Level(self, 1)
 
 if __name__ == "__main__":
     app = QApplication([])
