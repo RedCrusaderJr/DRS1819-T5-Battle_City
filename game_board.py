@@ -1,23 +1,47 @@
-from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QFrame, QLabel
 from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtCore import pyqtSignal, Qt
+from move_thread import MoveThread
 from enum import Enum
+from Tank import Tank
+
 
 
 class GameBoard(QFrame):
     BoardWidth = 32
     BoardHeight = 18
+    signal = pyqtSignal(int, int, list, object)
+
 
     def __init__(self, parent):
         super().__init__(parent)
         self.initGameBoard()
 
     def initGameBoard(self):
-        self.player1 = 1 #ovo ce biti instanca tenka
+        self.player1 = Tank()
+        self.player1Label = QLabel(self)
+        #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
         self.enemies = []
         self.bullets = []
         self.board = []
         self.clearBoard()
+        self.setFocusPolicy(Qt.StrongFocus)
         self.setWalls()
+        self.moveThread = MoveThread(self)
+        self.signal.connect(self.moveThread.move)
+        self.moveThread.threadSignal.connect(self.moved)
+
+    def showEvent(self, *args, **kwargs):
+        rect = self.contentsRect()
+        boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
+        pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
+
+        self.player1Label.setPixmap(pixmap1)
+        self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(), boardTop + self.player1.y
+                                      * self.squareHeight(), self.squareWidth(), self.squareHeight())
+        self.player1Label.orientation = 0
+        self.setShapeAt(self.player1.x, GameBoard.BoardHeight - self.player1.y - 1, Element.PLAYER1)
+        self.moveThread.start()
 
     def squareWidth(self):
         return self.contentsRect().width() // GameBoard.BoardWidth
@@ -32,9 +56,9 @@ class GameBoard(QFrame):
         self.board[(y * GameBoard.BoardWidth) + x] = shape
 
     def setWalls(self):
-        for i in range(6):
-            self.setShapeAt(0, 0 + i, Element.WALL)
-        self.update()
+        for i in range(3):
+            self.setShapeAt(0, GameBoard.BoardHeight - i - 1, Element.WALL)
+        #self.update()
 
     def clearBoard(self):
         for i in range(GameBoard.BoardHeight):
@@ -48,16 +72,27 @@ class GameBoard(QFrame):
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
                 shape = self.shapeAt(j, GameBoard.BoardHeight - i - 1)
-                if shape == Element.NONE:
+                """if shape == Element.NONE:
                     self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
-                                    0x000000)
-                elif shape == Element.WALL:
+                                    0x000000)"""
+                if shape == Element.WALL:
                     self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
                                     0xf90000)
 
     def drawSquare(self, painter, x, y, color):
         colorToDraw = QColor(color)
         painter.fillRect(x + 1, y + 1, self.squareWidth(), self.squareHeight(), colorToDraw)
+
+    def keyPressEvent(self, event):
+        self.signal.emit(self.player1.x, self.player1.y, self.board, event.key())
+
+    def moved(self, x, y):
+        self.player1.x = x
+        self.player1.y = y
+        rect = self.contentsRect()
+        boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
+        self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(), boardTop + self.player1.y
+                                      * self.squareHeight(), self.squareWidth(), self.squareHeight())
 
 
 class Element(Enum):

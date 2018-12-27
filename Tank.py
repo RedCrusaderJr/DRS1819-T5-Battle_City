@@ -1,4 +1,5 @@
 from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QPixmap
 
 
 class Tank:
@@ -6,10 +7,10 @@ class Tank:
     move_signal = pyqtSignal(object, int)
 
     def __init__(self):
+        self.pixmap = QPixmap('tank.png')
         self.lives = 3
-        self.x = 0
-        self.y = 0
-        self.image = 'tank.png'
+        self.x = 6
+        self.y = 6
 
     def move(self, direction):
         self.move_signal.emit(self, direction)
