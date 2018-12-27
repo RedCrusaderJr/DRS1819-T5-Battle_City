@@ -12,14 +12,19 @@ class BattleCity(QMainWindow):
 
     def initUI(self):
         self.showFullScreen()
-        self.show()
         self.gameBoard = GameBoard(self)
         self.setCentralWidget(self.gameBoard)
-
-
+        self.setStyleSheet("""
+        QFrame{
+            background-color: rgb(0, 0, 0);
+            }
+        """)
+        self.show()
 
 
 if __name__ == "__main__":
     app = QApplication([])
+
     battleCity = BattleCity()
     sys.exit(app.exec_())
+

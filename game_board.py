@@ -63,10 +63,10 @@ class GameBoard(QFrame):
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
                 shape = self.shapeAt(j, GameBoard.BoardHeight - i - 1)
-                if shape == Element.NONE:
+                """if shape == Element.NONE:
                     self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
-                                    0x000000)
-                elif shape == Element.WALL:
+                                    0x000000)"""
+                if shape == Element.WALL:
                     self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
                                     0xf90000)
 
