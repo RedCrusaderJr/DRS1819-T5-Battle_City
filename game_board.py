@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QFrame, QLabel
-from PyQt5.QtGui import QPainter, QColor
+from PyQt5.QtGui import QPainter, QColor, QTransform, QPixmap
 from PyQt5.QtCore import pyqtSignal, Qt, QMutex
 from move_thread import MoveThread
 from enum import Enum
-from Tank import Tank
+from tank import Tank
 import os
 
 
@@ -112,13 +112,19 @@ class GameBoard(QFrame):
         elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D:
             self.commands2.remove(event.key())
 
-    def moved(self, x, y, tank):
+    def moved(self, x, y, tank, orientation):
         self.mutex.lock()
+        transform = QTransform()
 
         if tank.player == 1:
             self.setShapeAt(self.player1.x, self.player1.y, Element.NONE)
             self.player1.x = x
             self.player1.y = y
+            pix = self.player1Label.pixmap()
+            transform.rotate(GameBoard.rotation_function(self.player1.orientation, orientation))
+            self.player1Label.setPixmap(pix.transformed(transform))
+            self.player1.orientation = orientation
+
             rect = self.contentsRect()
             boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
             self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(), boardTop + self.player1.y
@@ -128,6 +134,10 @@ class GameBoard(QFrame):
             self.setShapeAt(self.player2.x, self.player2.y, Element.NONE)
             self.player2.x = x
             self.player2.y = y
+            pix = self.player2Label.pixmap()
+            transform.rotate(GameBoard.rotation_function(self.player2.orientation, orientation))
+            self.player2Label.setPixmap(pix.transformed(transform))
+            self.player2.orientation = orientation
             rect = self.contentsRect()
             boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
             self.player2Label.setGeometry(rect.left() + self.player2.x * self.squareWidth(), boardTop + self.player2.y
@@ -163,6 +173,12 @@ class GameBoard(QFrame):
                 x = 0
                 y += 1
             return True
+
+    @staticmethod
+    def rotation_function(current_position, next_position):
+        diff = current_position - next_position
+        rotation_angle = 0 - diff * 90
+        return rotation_angle
 
     #AKO NEMA KOLIZIJE - TENK SE POMERA I PROVERAVA "Da li je naleto na metak"
 
