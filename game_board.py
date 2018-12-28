@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QFrame, QLabel
 from PyQt5.QtGui import QPainter, QColor
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, QMutex
 from move_thread import MoveThread
 from enum import Enum
 from Tank import Tank
@@ -10,14 +10,15 @@ import os
 class GameBoard(QFrame):
     BoardWidth = 32
     BoardHeight = 18
-    signal = pyqtSignal(Tank, Tank, list, object)
-
+    mutex = QMutex()
 
     # tile width/height in px
     TILE_SIZE = 16
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.commands1 = []
+        self.commands2 = []
         self.initGameBoard()
 
     def initGameBoard(self):
@@ -33,9 +34,10 @@ class GameBoard(QFrame):
         self.clearBoard()
         self.setFocusPolicy(Qt.StrongFocus)
         self.setWalls()
-        self.moveThread = MoveThread(self)
-        self.signal.connect(self.moveThread.move)
-        self.moveThread.threadSignal.connect(self.moved)
+        self.moveThread1 = MoveThread(self.commands1, self.player1, self)
+        self.moveThread2 = MoveThread(self.commands2, self.player2, self)
+        self.moveThread1.threadSignal.connect(self.moved)
+        self.moveThread2.threadSignal.connect(self.moved)
 
     def showEvent(self, *args, **kwargs):
         rect = self.contentsRect()
@@ -49,7 +51,6 @@ class GameBoard(QFrame):
                                       self.squareWidth(), self.squareHeight())
         self.player1Label.orientation = 0
         self.setShapeAt(self.player1.x, self.player1.y, Element.PLAYER1)
-        self.moveThread.start()
 
         self.player2Label.setPixmap(pixmap2)
         self.player2Label.setGeometry(rect.left() + self.player2.x * self.squareWidth(),
@@ -57,10 +58,9 @@ class GameBoard(QFrame):
                                       self.squareWidth(), self.squareHeight())
         self.player2Label.orientation = 0
         self.setShapeAt(self.player2.x, self.player2.y, Element.PLAYER2)
+        self.moveThread1.start()
+        self.moveThread2.start()
 
-        for i in range(self.BoardHeight):
-            for j in range(self.BoardWidth):
-                print(f"Board({i}, {j}) - {str(self.board[i * self.BoardWidth + j])}")
 
     def squareWidth(self):
         return self.contentsRect().width() // GameBoard.BoardWidth
@@ -101,9 +101,20 @@ class GameBoard(QFrame):
         painter.fillRect(x + 1, y + 1, self.squareWidth(), self.squareHeight(), colorToDraw)
 
     def keyPressEvent(self, event):
-        self.signal.emit(self.player1, self.player2, self.board, event.key())
+        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or event.key() == Qt.Key_Left or event.key() == Qt.Key_Right:
+            self.commands1.append(event.key())
+        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D:
+            self.commands2.append(event.key())
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or event.key() == Qt.Key_Left or event.key() == Qt.Key_Right:
+            self.commands1.remove(event.key())
+        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D:
+            self.commands2.remove(event.key())
 
     def moved(self, x, y, tank):
+        self.mutex.lock()
+
         if tank.player == 1:
             self.setShapeAt(self.player1.x, self.player1.y, Element.NONE)
             self.player1.x = x
@@ -123,6 +134,8 @@ class GameBoard(QFrame):
                                           * self.squareHeight(), self.squareWidth(), self.squareHeight())
             self.setShapeAt(self.player2.x, self.player2.y, Element.PLAYER2)
 
+        self.mutex.unlock()
+
     def loadLevel(self, level_nr=1):
             """ Load specified level
             @return boolean Whether level was loaded
@@ -139,7 +152,7 @@ class GameBoard(QFrame):
                 for ch in row:
                     if ch == "#":
                         self.setShapeAt(x, y, Element.WALL)
-                        print(f"{x} {y}")
+                       # print(f"{x} {y}")
                     elif ch == "$":
                         self.setShapeAt(x, y, Element.BASE)
                     elif ch == "1":

@@ -7,69 +7,65 @@ from Tank import Tank
 class MoveThread(QThread):
     threadSignal = pyqtSignal(int, int, Tank)
 
-    def __init__(self, parentQWidget = None):
+    def __init__(self, commands, tank, parentQWidget = None):
         super(MoveThread, self).__init__(parentQWidget)
+        self.pparent = parentQWidget
         self.wasCanceled = False
+        self.commands = commands
+        self.tank = tank
 
     def run(self):
         while not self.wasCanceled:
+            self.move()
             time.sleep(0.05)
 
     def cancel(self):
         self.wasCanceled = True
 
-    def move(self, tank1, tank2, board, key):
-        retTank = tank1
-        x1 = tank1.x
-        y1 = tank1.y
-        x2 = tank2.x
-        y2 = tank2.y
-        changed = False
-        if key == Qt.Key_Up:
-            y1 -= 1
-            changed = True
-        elif key == Qt.Key_Down:
-            y1 += 1
-            changed = True
-        elif key == Qt.Key_Right:
-            x1 += 1
-            changed = True
-        elif key == Qt.Key_Left:
-            x1 -= 1
-            changed = True
-        elif key == Qt.Key_W:
-            y2 -= 1
-            retTank = tank2
-            changed = True
-        elif key == Qt.Key_S:
-            y2 += 1
-            retTank = tank2
-            changed = True
-        elif key == Qt.Key_D:
-            x2 += 1
-            retTank = tank2
-            changed = True
-        elif key == Qt.Key_A:
-            x2 -= 1
-            retTank = tank2
-            changed = True
-
-        if not changed:
-            return
-        else:
-            if retTank.player == 1:
-                if self.isCollision(board, x1, y1):
-                    self.threadSignal.emit(x1, y1, retTank)
+    def move(self):
+        com = list(self.commands)
+        x = self.tank.x
+        y = self.tank.y
+        for key in com:
+            changed = False
+            if self.tank.player == 1:
+                if key == Qt.Key_Up:
+                    y -= 1
+                    changed = True
+                elif key == Qt.Key_Down:
+                    y += 1
+                    changed = True
+                elif key == Qt.Key_Right:
+                    x += 1
+                    changed = True
+                elif key == Qt.Key_Left:
+                    x -= 1
+                    changed = True
+            elif self.tank.player == 2:
+                if key == Qt.Key_W:
+                    y -= 1
+                    changed = True
+                elif key == Qt.Key_S:
+                    y += 1
+                    changed = True
+                elif key == Qt.Key_D:
+                    x += 1
+                    changed = True
+                elif key == Qt.Key_A:
+                    x -= 1
+                    changed = True
+            if changed:
+                if self.noCollision(x, y):
+                    self.threadSignal.emit(x, y, self.tank)
                 else:
-                    return
-            else:
-                if self.isCollision(board, x2, y2):
-                    self.threadSignal.emit(x2, y2, retTank)
-                else:
-                    return
+                    x = self.tank.x
+                    y = self.tank.y
+            time.sleep(0.05)
 
-    def isCollision(self, board, new_x, new_y):
-        nextPositionShape = board[(new_y * gb.GameBoard.BoardWidth) + new_x]
+    def noCollision(self, new_x, new_y):
+        self.pparent.mutex.lock()
+        nextPositionShape = self.pparent.board[(new_y * gb.GameBoard.BoardWidth) + new_x]
+        self.pparent.mutex.unlock()
         if (nextPositionShape is gb.Element.NONE) or (nextPositionShape is gb.Element.BULLET):
             return True
         return False

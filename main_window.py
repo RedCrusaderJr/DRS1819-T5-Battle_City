@@ -20,8 +20,6 @@ class BattleCity(QMainWindow):
             }
         """)
         self.show()
-        self.gameBoard = GameBoard(self)
-        self.setCentralWidget(self.gameBoard)
 
 
 if __name__ == "__main__":

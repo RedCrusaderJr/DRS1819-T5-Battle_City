@@ -12,6 +12,7 @@ class Tank:
         self.x = 6
         self.y = 6
         self.player = pl
+        self.orientation = 0
 
     def move(self, direction):
         self.move_signal.emit(self, direction)
