@@ -10,7 +10,7 @@ import os
 class GameBoard(QFrame):
     BoardWidth = 32
     BoardHeight = 18
-    signal = pyqtSignal(int, int, list, object)
+    signal = pyqtSignal(Tank, Tank, list, object)
 
 
     # tile width/height in px
@@ -21,9 +21,9 @@ class GameBoard(QFrame):
         self.initGameBoard()
 
     def initGameBoard(self):
-        self.player1 = Tank()
+        self.player1 = Tank(1)
         self.player1Label = QLabel(self)
-        self.player2 = Tank()
+        self.player2 = Tank(2)
         self.player2Label = QLabel(self)
 
         #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
@@ -48,7 +48,7 @@ class GameBoard(QFrame):
                                       boardTop + self.player1.y * self.squareHeight(),
                                       self.squareWidth(), self.squareHeight())
         self.player1Label.orientation = 0
-        self.setShapeAt(self.player1.x, GameBoard.BoardHeight - self.player1.y - 1, Element.PLAYER1)
+        self.setShapeAt(self.player1.x, self.player1.y, Element.PLAYER1)
         self.moveThread.start()
 
         self.player2Label.setPixmap(pixmap2)
@@ -56,7 +56,7 @@ class GameBoard(QFrame):
                                       boardTop + self.player2.y * self.squareHeight(),
                                       self.squareWidth(), self.squareHeight())
         self.player2Label.orientation = 0
-        self.setShapeAt(self.player2.x, GameBoard.BoardHeight - self.player2.y - 1, Element.PLAYER2)
+        self.setShapeAt(self.player2.x, self.player2.y, Element.PLAYER2)
 
         for i in range(self.BoardHeight):
             for j in range(self.BoardWidth):
@@ -77,12 +77,6 @@ class GameBoard(QFrame):
     def setWalls(self):
         self.loadLevel(1)
 
-        """
-        for i in range(3):
-            self.setShapeAt(0, GameBoard.BoardHeight - i - 1, Element.WALL)
-        #self.update()
-        """
-
     def clearBoard(self):
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
@@ -94,10 +88,7 @@ class GameBoard(QFrame):
         boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
-                shape = self.shapeAt(j, GameBoard.BoardHeight - i - 1)
-                """if shape == Element.NONE:
-                    self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
-                                    0x000000)"""
+                shape = self.shapeAt(j, i)
                 if shape == Element.WALL:
                     self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
                                     0xf90000)
@@ -110,17 +101,27 @@ class GameBoard(QFrame):
         painter.fillRect(x + 1, y + 1, self.squareWidth(), self.squareHeight(), colorToDraw)
 
     def keyPressEvent(self, event):
-        self.signal.emit(self.player1.x, self.player1.y, self.board, event.key())
+        self.signal.emit(self.player1, self.player2, self.board, event.key())
 
-    def moved(self, x, y):
-        self.setShapeAt(self.player1.x, self.player1.y, Element.NONE)
-        self.player1.x = x
-        self.player1.y = y
-        rect = self.contentsRect()
-        boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
-        self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(), boardTop + self.player1.y
-                                      * self.squareHeight(), self.squareWidth(), self.squareHeight())
-        self.setShapeAt(self.player1.x, self.player1.y, Element.PLAYER1)
+    def moved(self, x, y, tank):
+        if tank.player == 1:
+            self.setShapeAt(self.player1.x, self.player1.y, Element.NONE)
+            self.player1.x = x
+            self.player1.y = y
+            rect = self.contentsRect()
+            boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
+            self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(), boardTop + self.player1.y
+                                          * self.squareHeight(), self.squareWidth(), self.squareHeight())
+            self.setShapeAt(self.player1.x, self.player1.y, Element.PLAYER1)
+        elif tank.player == 2:
+            self.setShapeAt(self.player2.x, self.player2.y, Element.NONE)
+            self.player2.x = x
+            self.player2.y = y
+            rect = self.contentsRect()
+            boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
+            self.player2Label.setGeometry(rect.left() + self.player2.x * self.squareWidth(), boardTop + self.player2.y
+                                          * self.squareHeight(), self.squareWidth(), self.squareHeight())
+            self.setShapeAt(self.player2.x, self.player2.y, Element.PLAYER2)
 
     def loadLevel(self, level_nr=1):
             """ Load specified level
@@ -137,10 +138,10 @@ class GameBoard(QFrame):
             for row in data:
                 for ch in row:
                     if ch == "#":
-                        self.setShapeAt(x, GameBoard.BoardHeight - y - 1, Element.WALL)
+                        self.setShapeAt(x, y, Element.WALL)
                         print(f"{x} {y}")
                     elif ch == "$":
-                        self.setShapeAt(x, GameBoard.BoardHeight - y - 1, Element.BASE)
+                        self.setShapeAt(x, y, Element.BASE)
                     elif ch == "1":
                         self.player1.setCoordinates(x, y)
                     elif ch == "2":
@@ -151,12 +152,7 @@ class GameBoard(QFrame):
             return True
 
     #AKO NEMA KOLIZIJE - TENK SE POMERA I PROVERAVA "Da li je naleto na metak"
-    def isCollision(self, new_x, new_y):
-        nextPositionShape = self.board[(new_y * GameBoard.BoardWidth) + new_x]
-        if (nextPositionShape is Element.NONE) | (nextPositionShape is Element.BULLET):
-            return False
 
-        return True
 
 
 class Element(Enum):

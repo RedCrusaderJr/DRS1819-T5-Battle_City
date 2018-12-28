@@ -23,8 +23,6 @@ class BattleCity(QMainWindow):
         self.gameBoard = GameBoard(self)
         self.setCentralWidget(self.gameBoard)
 
-        #Level(self, 1)
-
 
 if __name__ == "__main__":
     app = QApplication([])

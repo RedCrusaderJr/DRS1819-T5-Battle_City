@@ -6,11 +6,12 @@ class Tank:
 
     move_signal = pyqtSignal(object, int)
 
-    def __init__(self):
+    def __init__(self, pl):
         self.pixmap = QPixmap('tank.png')
         self.lives = 3
         self.x = 6
         self.y = 6
+        self.player = pl
 
     def move(self, direction):
         self.move_signal.emit(self, direction)
