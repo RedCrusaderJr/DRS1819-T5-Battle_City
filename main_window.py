@@ -20,13 +20,10 @@ class BattleCity(QMainWindow):
             }
         """)
         self.show()
-<<<<<<< HEAD
+
         self.gameBoard = GameBoard(self)
         self.setCentralWidget(self.gameBoard)
 
-=======
-        #Level(self, 1)
->>>>>>> cdcc6a28032ce767c7ac9906ad1c19fcef8f6f00
 
 if __name__ == "__main__":
     app = QApplication([])
