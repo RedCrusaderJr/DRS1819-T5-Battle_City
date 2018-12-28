@@ -105,7 +105,6 @@ class GameBoard(QFrame):
                     self.drawSquare(painter, rect.left() + j * self.squareWidth(), boardTop + i * self.squareHeight(),
                                     0xeaa615)
 
-
     def drawSquare(self, painter, x, y, color):
         colorToDraw = QColor(color)
         painter.fillRect(x + 1, y + 1, self.squareWidth(), self.squareHeight(), colorToDraw)
@@ -114,12 +113,14 @@ class GameBoard(QFrame):
         self.signal.emit(self.player1.x, self.player1.y, self.board, event.key())
 
     def moved(self, x, y):
+        self.setShapeAt(self.player1.x, self.player1.y, Element.NONE)
         self.player1.x = x
         self.player1.y = y
         rect = self.contentsRect()
         boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
         self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(), boardTop + self.player1.y
                                       * self.squareHeight(), self.squareWidth(), self.squareHeight())
+        self.setShapeAt(self.player1.x, self.player1.y, Element.PLAYER1)
 
     def loadLevel(self, level_nr=1):
             """ Load specified level
