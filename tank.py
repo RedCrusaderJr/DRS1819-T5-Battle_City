@@ -7,7 +7,10 @@ class Tank:
     move_signal = pyqtSignal(object, int)
 
     def __init__(self, pl):
-        self.pixmap = QPixmap('tank.png')
+        if pl == 1:
+            self.pixmap = QPixmap('tank1.png')
+        else:
+            self.pixmap = QPixmap('tank2.png')
         self.lives = 3
         self.x = 6
         self.y = 6

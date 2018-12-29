@@ -2,8 +2,10 @@ from PyQt5.QtWidgets import QFrame, QLabel
 from PyQt5.QtGui import QPainter, QColor, QTransform, QPixmap
 from PyQt5.QtCore import pyqtSignal, Qt, QMutex
 from move_thread import MoveThread
+from move_enemy_thread import MoveEnemyThread
 from enum import Enum
 from tank import Tank
+from enemy_tank import EnemyTank
 import os
 
 
@@ -29,6 +31,11 @@ class GameBoard(QFrame):
 
         #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
         self.enemies = []
+        self.enemies.append(EnemyTank())
+        self.enemiesNewPosition = []
+        self.enemiesNewPosition.append(EnemyTank())
+        self.enemyDictionary = {}
+        self.enemyDictionary[self.enemiesNewPosition[0]] = QLabel(self)
         self.bullets = []
         self.board = []
         self.clearBoard()
@@ -38,12 +45,15 @@ class GameBoard(QFrame):
         self.moveThread2 = MoveThread(self.commands2, self.player2, self)
         self.moveThread1.threadSignal.connect(self.moved)
         self.moveThread2.threadSignal.connect(self.moved)
+        self.moveEnemyThread = MoveEnemyThread(self)
+        self.moveEnemyThread.threadSignal.connect(self.movedEnemy)
 
     def showEvent(self, *args, **kwargs):
         rect = self.contentsRect()
         boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
         pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
         pixmap2 = self.player2.pixmap.scaled(self.squareWidth(), self.squareHeight())
+        pixmap3 = self.enemies[0].pixmap.scaled(self.squareWidth(), self.squareHeight())
 
         self.player1Label.setPixmap(pixmap1)
         self.player1Label.setGeometry(rect.left() + self.player1.x * self.squareWidth(),
@@ -58,8 +68,16 @@ class GameBoard(QFrame):
                                       self.squareWidth(), self.squareHeight())
         self.player2Label.orientation = 0
         self.setShapeAt(self.player2.x, self.player2.y, Element.PLAYER2)
+
+        self.enemyDictionary[self.enemiesNewPosition[0]].setPixmap(pixmap3)
+        self.enemyDictionary[self.enemiesNewPosition[0]].setGeometry(rect.left() + self.enemiesNewPosition[0].x * self.squareWidth(),
+                                      boardTop + self.enemiesNewPosition[0].y * self.squareHeight(),
+                                      self.squareWidth(), self.squareHeight())
+        self.setShapeAt(self.enemiesNewPosition[0].x, self.enemiesNewPosition[0].y, Element.ENEMY)
+
         self.moveThread1.start()
         self.moveThread2.start()
+        self.moveEnemyThread.start()
 
 
     def squareWidth(self):
@@ -145,6 +163,36 @@ class GameBoard(QFrame):
             self.setShapeAt(self.player2.x, self.player2.y, Element.PLAYER2)
 
         self.mutex.unlock()
+
+    def movedEnemy(self):
+        self.mutex.lock()
+
+        transform = QTransform()
+
+        for enemy in self.enemies:
+            self.setShapeAt(enemy.x, enemy.y, Element.NONE)
+
+        rect = self.contentsRect()
+        boardTop = rect.bottom() - GameBoard.BoardHeight * self.squareHeight()
+
+        for enemy in self.enemiesNewPosition:
+            self.setShapeAt(enemy.x, enemy.y, Element.ENEMY)
+            self.enemyDictionary[enemy].setGeometry(rect.left() + enemy.x * self.squareWidth(), boardTop + enemy.y
+                                          * self.squareHeight(), self.squareWidth(), self.squareHeight())
+
+        for i in range(len(self.enemies)):
+            pix = self.enemyDictionary[self.enemiesNewPosition[0]].pixmap()
+            transform.rotate(GameBoard.rotation_function(self.enemies[0].direction, self.enemiesNewPosition[0].direction))
+            self.enemyDictionary[self.enemiesNewPosition[0]].setPixmap(pix.transformed(transform))
+
+            self.enemies[i].x = self.enemiesNewPosition[i].x
+            self.enemies[i].y = self.enemiesNewPosition[i].y
+            self.enemies[i].direction = self.enemiesNewPosition[i].direction
+
+        self.mutex.unlock()
+
+
+
 
     def loadLevel(self, level_nr=1):
             """ Load specified level
