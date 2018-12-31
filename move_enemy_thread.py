@@ -1,55 +1,50 @@
 from PyQt5.QtCore import QThread, pyqtSignal
-import game_board as gb
 import time
 from enemy_tank import EnemyTank
+from enums import ElementType, Orientation
+from helper import Helper
 
 
 class MoveEnemyThread(QThread):
-    threadSignal = pyqtSignal()
+    thread_signal = pyqtSignal()
 
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThread, self).__init__(parentQWidget)
-        self.pparent = parentQWidget
-        self.wasCanceled = False
+        self.parent_widget = parentQWidget
+        self.was_canceled = False
 
     def run(self):
-        while not self.wasCanceled:
+        while not self.was_canceled:
             self.moveEnemy()
             time.sleep(0.5)
 
     def cancel(self):
-        self.wasCanceled = True
+        self.was_canceled = True
 
     def moveEnemy(self):
-        for enemy in self.pparent.enemiesNewPosition:
-            if enemy.direction == 0:
-                if self.noCollision(enemy.x, enemy.y-1):
+        for enemy in self.parent_widget.enemies_new_position:
+            if enemy.direction == Orientation.UP:
+                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y-1):
                     enemy.y -= 1
                 else:
-                    enemy.direction = 1
-            elif enemy.direction == 1:
-                if self.noCollision(enemy.x+1, enemy.y):
+                    enemy.direction = Orientation.RIGHT
+
+            elif enemy.direction == Orientation.RIGHT:
+                if not Helper.isCollision(self.parent_widget, enemy.x+1, enemy.y):
                     enemy.x += 1
                 else:
-                    enemy.direction = 2
-            elif enemy.direction == 2:
-                if self.noCollision(enemy.x, enemy.y+1):
+                    enemy.direction = Orientation.DOWN
+
+            elif enemy.direction == Orientation.DOWN:
+                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y+1):
                     enemy.y += 1
                 else:
-                    enemy.direction = 3
+                    enemy.direction = Orientation.LEFT
+
             else:
-                if self.noCollision(enemy.x-1, enemy.y):
+                if not Helper.isCollision(self.parent_widget, enemy.x-1, enemy.y):
                     enemy.x -= 1
                 else:
-                    enemy.direction = 0
-        self.threadSignal.emit()
+                    enemy.direction = Orientation.UP
 
-
-
-    def noCollision(self, new_x, new_y):
-        self.pparent.mutex.lock()
-        nextPositionShape = self.pparent.board[(new_y * gb.GameBoard.BoardWidth) + new_x]
-        self.pparent.mutex.unlock()
-        if (nextPositionShape is gb.Element.NONE) or (nextPositionShape is gb.Element.BULLET):
-            return True
-        return False
+        self.thread_signal.emit()

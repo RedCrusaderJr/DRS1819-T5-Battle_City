@@ -12,8 +12,8 @@ class BattleCity(QMainWindow):
 
     def initUI(self):
         self.showFullScreen()
-        self.gameBoard = GameBoard(self)
-        self.setCentralWidget(self.gameBoard)
+        self.game_board = GameBoard(self)
+        self.setCentralWidget(self.game_board)
         self.setStyleSheet("""
         QFrame{
             background-color: rgb(0, 0, 0);

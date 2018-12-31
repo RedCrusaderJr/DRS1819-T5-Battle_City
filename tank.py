@@ -1,28 +1,30 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap
+from enums import PlayerType, Orientation
 
 
 class Tank:
 
     move_signal = pyqtSignal(object, int)
 
-    def __init__(self, pl):
-        if pl == 1:
-            self.pixmap = QPixmap('tank1.png')
-        else:
-            self.pixmap = QPixmap('tank2.png')
+    def __init__(self, player_type):
+        if player_type == PlayerType.PLAYER_1:
+            self.pix_map = QPixmap('./images/tank1.png')
+        elif player_type == PlayerType.PLAYER_2:
+            self.pix_map = QPixmap('./images/tank2.png')
+
         self.lives = 3
         self.x = 6
         self.y = 6
-        self.player = pl
-        self.orientation = 0
+        self.player_type = player_type
+        self.orientation = Orientation.UP
 
     def move(self, direction):
         self.move_signal.emit(self, direction)
 
-    def setCoordinates(self, newX, newY):
-        self.x = newX
-        self.y = newY
+    def updateLives(self, new_lives):
+        self.lives = new_lives
 
-    def updateLives(self, newLives):
-        self.lives = newLives
+    def setCoordinates(self, x, y):
+        self.x = x
+        self.y = y
