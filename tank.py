@@ -18,6 +18,7 @@ class Tank:
         self.y = 6
         self.player_type = player_type
         self.orientation = Orientation.UP
+        self.active_bullet = None
 
     def move(self, direction):
         self.move_signal.emit(self, direction)

@@ -3,9 +3,12 @@ import time
 from tank import Tank
 from enums import PlayerType, ElementType, Orientation
 from helper import Helper
+from bullet import Bullet
+
 
 class MovePlayerThread(QThread):
     thread_signal = pyqtSignal(int, int, Tank, int)
+    fire_bullet_signal = pyqtSignal(Tank)
 
     def __init__(self, commands, tank, parentQWidget = None):
         super(MovePlayerThread, self).__init__(parentQWidget)
@@ -29,6 +32,7 @@ class MovePlayerThread(QThread):
         orientation = self.tank.orientation
         for key in com:
             changed = False
+            bullet_changed = False
             if self.tank.player_type == PlayerType.PLAYER_1:
                 if key == Qt.Key_Up:
                     y -= 1
@@ -46,6 +50,10 @@ class MovePlayerThread(QThread):
                     x -= 1
                     changed = True
                     orientation = Orientation.LEFT
+                elif key == Qt.Key_Space:
+                    if self.tank.active_bullet is None:
+                        bullet_changed = True
+
 
             elif self.tank.player_type == PlayerType.PLAYER_2:
                 if key == Qt.Key_W:
@@ -64,6 +72,9 @@ class MovePlayerThread(QThread):
                     x -= 1
                     changed = True
                     orientation = Orientation.LEFT
+                elif key == Qt.Key_F:
+                    if self.tank.active_bullet is None:
+                        bullet_changed = True
 
             if changed:
                 if Helper.isCollision(self.parent_widget, x, y):
@@ -72,4 +83,19 @@ class MovePlayerThread(QThread):
                     self.thread_signal.emit(x, y, self.tank, orientation)
                 else:
                     self.thread_signal.emit(x, y, self.tank, orientation)
+
+            if bullet_changed:
+                bullet_x = self.tank.x
+                bullet_y = self.tank.y
+                if self.tank.orientation == Orientation.UP:
+                    bullet_y -= 1
+                elif self.tank.orientation == Orientation.RIGHT:
+                    bullet_x += 1
+                elif self.tank.orientation == Orientation.DOWN:
+                    bullet_y += 1
+                elif self.tank.orientation == Orientation.LEFT:
+                    bullet_x -= 1
+                if not Helper.isBulletCollision(self.parent_widget, bullet_x, bullet_y):
+                    self.tank.active_bullet = Bullet(bullet_x, bullet_y, self.tank.orientation, self.tank.player_type)
+                    self.fire_bullet_signal.emit(self.tank)
             time.sleep(0.05)
