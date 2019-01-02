@@ -3,9 +3,11 @@ import time
 from tank import Tank
 from enums import PlayerType, ElementType, Orientation
 from helper import Helper
+from bullet import Bullet
 
 class MovePlayerThread(QThread):
     thread_signal = pyqtSignal(int, int, Tank, int)
+    bullet_fired_signal = pyqtSignal(Bullet)
 
     def __init__(self, commands, tank, parentQWidget = None):
         super(MovePlayerThread, self).__init__(parentQWidget)
@@ -46,6 +48,12 @@ class MovePlayerThread(QThread):
                     x -= 1
                     changed = True
                     orientation = Orientation.LEFT
+                elif key == Qt.Key_Space:
+                    if self.tank.fireBullet():
+                        if Helper.isCollision(self.parent_widget, self.tank.active_bullet.x, self.tank.active_bullet.y, ElementType.BULLET):
+                            print("move: bullet_impact")
+                        else:
+                            self.bullet_fired_signal.emit(self.tank.active_bullet)
 
             elif self.tank.player_type == PlayerType.PLAYER_2:
                 if key == Qt.Key_W:
@@ -64,12 +72,23 @@ class MovePlayerThread(QThread):
                     x -= 1
                     changed = True
                     orientation = Orientation.LEFT
+                elif key == Qt.Key_F:
+                    if self.tank.fireBullet():
+                        if Helper.isCollision(self.parent_widget, self.tank.active_bullet.x, self.tank.active_bullet.y, ElementType.BULLET):
+                            print("move: bullet_impact")
+                        else:
+                            self.bullet_fired_signal.emit(self.tank.active_bullet)
 
             if changed:
-                if Helper.isCollision(self.parent_widget, x, y):
+                if self.tank.player_type is PlayerType.PLAYER_1:
+                    element_type = ElementType.PLAYER1
+                elif self.tank.player_type is PlayerType.PLAYER_2:
+                    element_type = ElementType.PLAYER2
+
+                if Helper.isCollision(self.parent_widget, x, y, element_type):
                     x = self.tank.x
                     y = self.tank.y
                     self.thread_signal.emit(x, y, self.tank, orientation)
                 else:
                     self.thread_signal.emit(x, y, self.tank, orientation)
-            time.sleep(0.05)
+            #time.sleep(0.05)

@@ -1,6 +1,7 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap
-from enums import PlayerType, Orientation
+from enums import PlayerType, Orientation, BulletType
+from bullet import Bullet
 
 
 class Tank:
@@ -18,6 +19,7 @@ class Tank:
         self.y = 6
         self.player_type = player_type
         self.orientation = Orientation.UP
+        self.active_bullet = None
 
     def move(self, direction):
         self.move_signal.emit(self, direction)
@@ -28,3 +30,29 @@ class Tank:
     def setCoordinates(self, x, y):
         self.x = x
         self.y = y
+
+    def fireBullet(self):
+        isBulletFired = False
+
+        if self.active_bullet is None:
+            bullet_x = self.x
+            bullet_y = self.y
+
+            if self.orientation is Orientation.UP:
+                bullet_x = self.x
+                bullet_y = self.y - 1
+            elif self.orientation is Orientation.RIGHT:
+                bullet_x = self.x + 1
+                bullet_y = self.y
+            elif self.orientation is Orientation.DOWN:
+                bullet_x = self.x
+                bullet_y = self.y + 1
+            elif self.orientation is Orientation.LEFT:
+                bullet_x = self.x - 1
+                bullet_y = self.y
+
+            self.active_bullet = Bullet(BulletType.FRIEND, bullet_x, bullet_y, self.orientation)
+            isBulletFired = True
+            print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
+
+        return isBulletFired

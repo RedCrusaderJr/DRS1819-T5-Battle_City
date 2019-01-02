@@ -29,3 +29,7 @@ class Orientation(IntEnum):
     RIGHT = 1,
     DOWN = 2,
     LEFT = 3,
+
+class BulletType(IntEnum):
+    FRIEND = 0,
+    ENEMY = 1,

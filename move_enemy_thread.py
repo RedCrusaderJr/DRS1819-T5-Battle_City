@@ -24,25 +24,25 @@ class MoveEnemyThread(QThread):
     def moveEnemy(self):
         for enemy in self.parent_widget.enemies_new_position:
             if enemy.direction == Orientation.UP:
-                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y-1):
+                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y-1, ElementType.ENEMY):
                     enemy.y -= 1
                 else:
                     enemy.direction = Orientation.RIGHT
 
             elif enemy.direction == Orientation.RIGHT:
-                if not Helper.isCollision(self.parent_widget, enemy.x+1, enemy.y):
+                if not Helper.isCollision(self.parent_widget, enemy.x+1, enemy.y, ElementType.ENEMY):
                     enemy.x += 1
                 else:
                     enemy.direction = Orientation.DOWN
 
             elif enemy.direction == Orientation.DOWN:
-                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y+1):
+                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y+1, ElementType.ENEMY):
                     enemy.y += 1
                 else:
                     enemy.direction = Orientation.LEFT
 
             else:
-                if not Helper.isCollision(self.parent_widget, enemy.x-1, enemy.y):
+                if not Helper.isCollision(self.parent_widget, enemy.x-1, enemy.y, ElementType.ENEMY):
                     enemy.x -= 1
                 else:
                     enemy.direction = Orientation.UP

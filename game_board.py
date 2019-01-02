@@ -3,6 +3,7 @@ from PyQt5.QtGui import QPainter, QColor, QTransform, QPixmap
 from PyQt5.QtCore import pyqtSignal, Qt, QMutex
 from move_player_thread import MovePlayerThread
 from move_enemy_thread import MoveEnemyThread
+from move_bullets_thread import MoveBulletsThread
 from tank import Tank
 from enemy_tank import EnemyTank
 import os
@@ -39,6 +40,8 @@ class GameBoard(QFrame):
         self.enemy_dictionary[self.enemies_new_position[0]] = QLabel(self)
 
         self.bullets = []
+        self.bullet_dictionary = {}
+
         self.board = []
 
         self.clearBoard()
@@ -47,12 +50,17 @@ class GameBoard(QFrame):
 
         self.move_player_1_thread = MovePlayerThread(self.commands_1, self.player_1, self)
         self.move_player_1_thread.thread_signal.connect(self.playerMoved)
+        self.move_player_1_thread.bullet_fired_signal.connect(self.bulletFired)
 
         self.move_player_2_thread = MovePlayerThread(self.commands_2, self.player_2, self)
         self.move_player_2_thread.thread_signal.connect(self.playerMoved)
+        self.move_player_2_thread.bullet_fired_signal.connect(self.bulletFired)
 
         self.move_enemy_thread = MoveEnemyThread(self)
         self.move_enemy_thread.thread_signal.connect(self.enemyMoved)
+
+        self.move_bullets_thread = MoveBulletsThread(self)
+        self.move_bullets_thread.thread_signal.connect(self.bulletMoved)
 
     #region EVENTS
     def showEvent(self, *args, **kwargs):
@@ -79,6 +87,7 @@ class GameBoard(QFrame):
         self.move_player_1_thread.start()
         self.move_player_2_thread.start()
         self.move_enemy_thread.start()
+        self.move_bullets_thread.start()
 
     def paintEvent(self, QPaintEvent):
         painter = QPainter(self)
@@ -99,9 +108,15 @@ class GameBoard(QFrame):
                                     0xeaa615)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or event.key() == Qt.Key_Left or event.key() == Qt.Key_Right:
+        if event.key() == Qt.Key_Up or  event.key() == Qt.Key_Down or  \
+                                        event.key() == Qt.Key_Left or  \
+                                        event.key() == Qt.Key_Right or \
+                                        event.key() == Qt.Key_Space:
             self.commands_1.append(event.key())
-        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D:
+        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or \
+                                        event.key() == Qt.Key_A or \
+                                        event.key() == Qt.Key_D or \
+                                        event.key() == Qt.Key_F:
             self.commands_2.append(event.key())
 
     def keyReleaseEvent(self, event):
@@ -164,14 +179,15 @@ class GameBoard(QFrame):
     #endregion
 
     #region CALLBACKS
-    def playerMoved(self, x, y, tank, orientation):
+    def playerMoved(self, new_x, new_y, tank, orientation):
         self.mutex.lock()
+
         transform = QTransform()
 
         if tank.player_type == PlayerType.PLAYER_1:
             self.setShapeAt(self.player_1.x, self.player_1.y, ElementType.NONE)
-            self.player_1.x = x
-            self.player_1.y = y
+            self.player_1.x = new_x
+            self.player_1.y = new_y
 
             pix = self.player_1_label.pixmap()
             transform.rotate(Helper.rotationFunction(self.player_1.orientation, orientation))
@@ -183,8 +199,8 @@ class GameBoard(QFrame):
 
         elif tank.player_type == PlayerType.PLAYER_2:
             self.setShapeAt(self.player_2.x, self.player_2.y, ElementType.NONE)
-            self.player_2.x = x
-            self.player_2.y = y
+            self.player_2.x = new_x
+            self.player_2.y = new_y
 
             pix = self.player_2_label.pixmap()
             transform.rotate(Helper.rotationFunction(self.player_2.orientation, orientation))
@@ -219,6 +235,36 @@ class GameBoard(QFrame):
             self.enemies[i].direction = self.enemies_new_position[i].direction
 
         self.mutex.unlock()
+
+    def bulletFired(self, bullet):
+        self.mutex.lock()
+
+        self.bullet_dictionary[bullet] = QLabel(self)
+        bullet_label = self.bullet_dictionary[bullet]
+        bullet.pm_flying = bullet.pm_flying.scaled(self.getSquareWidth(), self.getSquareHeight())
+        bullet_label.setPixmap(bullet.pm_flying)
+
+        self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+        bullet_label.orientation = bullet.orientation
+        bullet_label.show()
+        self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+
+        self.mutex.unlock()
+
+    def bulletMoved(self, new_x, new_y, bullet):
+        self.mutex.lock()
+
+        self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+        bullet.setCoordinates(new_x, new_y)
+
+        bullet_label = self.bullet_dictionary[bullet]
+        self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+        #bullet_label.show()
+
+        self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+
+        self.mutex.unlock()
+
     #endregion
 
     def drawSquare(self, painter, x, y, color):
