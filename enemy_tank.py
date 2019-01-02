@@ -9,6 +9,7 @@ class EnemyTank:
         self.y = 2
         self.direction = Orientation.RIGHT
         self.pix_map = QPixmap('./images/enemy.png')
+        self.active_bullet = None
 
 
     def setCoordinates(self, x, y):

@@ -44,6 +44,7 @@ class GameBoard(QFrame):
 
         self.board = []
 
+
         self.clearBoard()
         self.setFocusPolicy(Qt.StrongFocus)
         self.setWalls()
@@ -120,9 +121,11 @@ class GameBoard(QFrame):
             self.commands_2.append(event.key())
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or event.key() == Qt.Key_Left or event.key() == Qt.Key_Right:
+        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or event.key() == Qt.Key_Left\
+                or event.key() == Qt.Key_Right or event.key() == Qt.Key_Space:
             self.commands_1.remove(event.key())
-        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D:
+        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D\
+                or event.key() == Qt.Key_F:
             self.commands_2.remove(event.key())
     #endregion
 
@@ -273,6 +276,8 @@ class GameBoard(QFrame):
 
     def setGameBoardLabelGeometry(self, label, x, y):
         rect = self.contentsRect()
+        height = self.getSquareHeight()
+        bottom = rect.bottom()
         board_top = rect.bottom() - GameBoard.BoardHeight * self.getSquareHeight()
         label.setGeometry(rect.left() + x * self.getSquareWidth(),
                           board_top + y * self.getSquareHeight(),

@@ -5,6 +5,7 @@ from enums import PlayerType, ElementType, Orientation
 from helper import Helper
 from bullet import Bullet
 
+
 class MovePlayerThread(QThread):
     thread_signal = pyqtSignal(int, int, Tank, int)
     bullet_fired_signal = pyqtSignal(Bullet)
@@ -31,6 +32,7 @@ class MovePlayerThread(QThread):
         orientation = self.tank.orientation
         for key in com:
             changed = False
+            bullet_changed = False
             if self.tank.player_type == PlayerType.PLAYER_1:
                 if key == Qt.Key_Up:
                     y -= 1
@@ -91,4 +93,4 @@ class MovePlayerThread(QThread):
                     self.thread_signal.emit(x, y, self.tank, orientation)
                 else:
                     self.thread_signal.emit(x, y, self.tank, orientation)
-            #time.sleep(0.05)
+            time.sleep(0.05)

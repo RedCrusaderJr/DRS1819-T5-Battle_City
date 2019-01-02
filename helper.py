@@ -12,7 +12,7 @@ class Helper:
     @staticmethod
     def isCollision(parent_widget, new_x, new_y, element_type):
         parent_widget.mutex.lock()
-        next_position_shape = parent_widget.board[(new_y * gb.GameBoard.BoardWidth) + new_x]
+        next_position_shape = parent_widget.getShapeType(new_x, new_y) #parent_widget.board[(new_y * gb.GameBoard.BoardWidth) + new_x]
         parent_widget.mutex.unlock()
 
         is_collision = True
