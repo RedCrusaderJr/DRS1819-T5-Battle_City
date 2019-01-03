@@ -9,6 +9,7 @@ from enemy_tank import EnemyTank
 import os
 from enums import PlayerType, ElementType, WallType, Orientation
 from helper import Helper
+from random import sample
 
 class GameBoard(QFrame):
     #TODO: refactor ovo staviti negde
@@ -26,6 +27,9 @@ class GameBoard(QFrame):
         self.initGameBoard()
 
     def initGameBoard(self):
+        self.num_of_active_enemies = 4
+        self.num_of_all_enemies = 10
+
         self.player_1 = Tank(PlayerType.PLAYER_1)
         self.player_1_label = QLabel(self)
         self.player_2 = Tank(PlayerType.PLAYER_2)
@@ -33,11 +37,18 @@ class GameBoard(QFrame):
 
         #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
         self.enemies = []
-        self.enemies.append(EnemyTank())
+        self.random_values = []
+        self.random_values = sample(range(1, 32), 4)
+        for i in range(self.num_of_active_enemies):
+            self.enemies.append(EnemyTank(self.random_values[i]))
+
         self.enemies_new_position = []
-        self.enemies_new_position.append(EnemyTank())
+        for i in range(len(self.enemies)):
+            self.enemies_new_position.append(EnemyTank(self.enemies[i].x))
+
         self.enemy_dictionary = {}
-        self.enemy_dictionary[self.enemies_new_position[0]] = QLabel(self)
+        for i in range(len(self.enemies)):
+            self.enemy_dictionary[self.enemies_new_position[i]] = QLabel(self)
 
         self.bullets = []
         self.bullet_dictionary = {}
@@ -68,7 +79,7 @@ class GameBoard(QFrame):
 
         pixmap1 = self.player_1.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
         pixmap2 = self.player_2.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
-        pixmap3 = self.enemies[0].pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+
 
         self.player_1_label.setPixmap(pixmap1)
         self.setGameBoardLabelGeometry(self.player_1_label, self.player_1.x, self.player_1.y)
@@ -80,10 +91,11 @@ class GameBoard(QFrame):
         self.player_2_label.orientation = Orientation.UP
         self.setShapeAt(self.player_2.x, self.player_2.y, ElementType.PLAYER2)
 
-        enemy_label = self.enemy_dictionary[self.enemies_new_position[0]]
-        enemy_label.setPixmap(pixmap3)
-        self.setGameBoardLabelGeometry(enemy_label, self.enemies_new_position[0].x, self.enemies_new_position[0].y)
-        self.setShapeAt(self.enemies_new_position[0].x, self.enemies_new_position[0].y, ElementType.ENEMY)
+        for i in range(len(self.enemies)):
+            pixmap3 = self.enemies[i].pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+            self.enemy_dictionary[self.enemies_new_position[i]].setPixmap(pixmap3)
+            self.setGameBoardLabelGeometry(self.enemy_dictionary[self.enemies_new_position[i]], self.enemies_new_position[i].x, self.enemies_new_position[i].y)
+            self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
 
         self.move_player_1_thread.start()
         self.move_player_2_thread.start()
@@ -218,8 +230,6 @@ class GameBoard(QFrame):
     def enemyMoved(self):
         self.mutex.lock()
 
-        transform = QTransform()
-
         for enemy in self.enemies:
             self.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
 
@@ -229,9 +239,10 @@ class GameBoard(QFrame):
             self.setGameBoardLabelGeometry(enemy_label, enemy.x, enemy.y)
 
         for i in range(len(self.enemies)):
-            pix = self.enemy_dictionary[self.enemies_new_position[0]].pixmap()
-            transform.rotate(Helper.rotationFunction(self.enemies[0].direction, self.enemies_new_position[0].direction))
-            self.enemy_dictionary[self.enemies_new_position[0]].setPixmap(pix.transformed(transform))
+            transform = QTransform()
+            pix = self.enemy_dictionary[self.enemies_new_position[i]].pixmap()
+            transform.rotate(Helper.rotationFunction(self.enemies[i].direction, self.enemies_new_position[i].direction))
+            self.enemy_dictionary[self.enemies_new_position[i]].setPixmap(pix.transformed(transform))
 
             self.enemies[i].x = self.enemies_new_position[i].x
             self.enemies[i].y = self.enemies_new_position[i].y

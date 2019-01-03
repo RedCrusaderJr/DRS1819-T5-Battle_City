@@ -4,10 +4,10 @@ from enums import Orientation
 
 class EnemyTank:
 
-    def __init__(self):
-        self.x = 0
+    def __init__(self, x):
+        self.x = x
         self.y = 2
-        self.direction = Orientation.RIGHT
+        self.direction = Orientation.DOWN
         self.pix_map = QPixmap('./images/enemy.png')
         self.active_bullet = None
 
