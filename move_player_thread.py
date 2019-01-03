@@ -7,7 +7,7 @@ from bullet import Bullet
 
 
 class MovePlayerThread(QThread):
-    thread_signal = pyqtSignal(int, int, Tank, int)
+    thread_signal = pyqtSignal(int, int, Tank, Orientation)
     bullet_fired_signal = pyqtSignal(Bullet)
 
     def __init__(self, commands, tank, parentQWidget = None):
