@@ -5,7 +5,7 @@ from enum import Enum
 
 class Bullet:
 
-    def __init__(self, bullet_type, x, y, orientation):
+    def __init__(self, bullet_type, x, y, orientation, owner):
         #print(f"init bullet ({x}, {y}) - orientation: {orientation} - self: {self}")
 
         self.pm_launched = QPixmap('./images/launched_bullet.png')
@@ -15,6 +15,7 @@ class Bullet:
         self.y = y
         self.type = bullet_type
         self.orientation = orientation
+        self.bullet_owner = owner
 
     def setCoordinates(self, new_x, new_y):
         self.x = new_x

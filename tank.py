@@ -53,7 +53,7 @@ class Tank:
                 bullet_y = self.y
                 isBulletFired = True
 
-            self.active_bullet = Bullet(BulletType.FRIEND, bullet_x, bullet_y, self.orientation)
+            self.active_bullet = Bullet(BulletType.FRIEND, bullet_x, bullet_y, self.orientation, self)
             print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
 
         return isBulletFired

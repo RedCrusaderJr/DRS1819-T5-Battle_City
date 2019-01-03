@@ -11,7 +11,6 @@ class EnemyTank:
         self.pix_map = QPixmap('./images/enemy.png')
         self.active_bullet = None
 
-
     def setCoordinates(self, x, y):
         self.x = x
         self.y = y

@@ -13,9 +13,7 @@ class Helper:
     def isCollision(parent_widget, new_x, new_y, element_type):
         is_collision = True
         if 0 <= new_x <= parent_widget.BoardWidth - 1 and 0 <= new_y <= parent_widget.BoardHeight - 1:
-            parent_widget.mutex.lock()
             next_position_shape = parent_widget.getShapeType(new_x, new_y) #parent_widget.board[(new_y * gb.GameBoard.BoardWidth) + new_x]
-            parent_widget.mutex.unlock()
 
             if (element_type is ElementType.PLAYER1) or (element_type is ElementType.PLAYER2) or (element_type is ElementType.ENEMY):
                 if (next_position_shape is ElementType.NONE) or (next_position_shape is ElementType.BULLET):

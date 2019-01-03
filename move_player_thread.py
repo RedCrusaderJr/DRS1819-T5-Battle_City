@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QThread, Qt, pyqtSignal
+from PyQt5.QtCore import QThread, Qt, pyqtSignal, QMutex
 import time
 from tank import Tank
 from enums import PlayerType, ElementType, Orientation
@@ -6,9 +6,12 @@ from helper import Helper
 from bullet import Bullet
 
 
+
 class MovePlayerThread(QThread):
     thread_signal = pyqtSignal(int, int, Tank, Orientation)
     bullet_fired_signal = pyqtSignal(Bullet)
+    bullet_impact_signal = pyqtSignal(int, int, Bullet)
+    thread_mutex = QMutex()
 
     def __init__(self, commands, tank, parentQWidget = None):
         super(MovePlayerThread, self).__init__(parentQWidget)
@@ -32,7 +35,6 @@ class MovePlayerThread(QThread):
         orientation = self.tank.orientation
         for key in com:
             changed = False
-            bullet_changed = False
             if self.tank.player_type == PlayerType.PLAYER_1:
                 if key == Qt.Key_Up:
                     y -= 1
@@ -52,8 +54,10 @@ class MovePlayerThread(QThread):
                     orientation = Orientation.LEFT
                 elif key == Qt.Key_Space:
                     if self.tank.fireBullet():
-                        if Helper.isCollision(self.parent_widget, self.tank.active_bullet.x, self.tank.active_bullet.y, ElementType.BULLET):
-                            print("move: bullet_impact")
+                        if Helper.isCollision(self.parent_widget, self.tank.active_bullet.x, self.tank.active_bullet.y,
+                                              ElementType.BULLET):
+                            self.bullet_impact_signal.emit(self.tank.active_bullet.x, self.tank.active_bullet.y,
+                                                           self.tank.active_bullet)
                         else:
                             self.bullet_fired_signal.emit(self.tank.active_bullet)
 
@@ -76,8 +80,12 @@ class MovePlayerThread(QThread):
                     orientation = Orientation.LEFT
                 elif key == Qt.Key_F:
                     if self.tank.fireBullet():
-                        if Helper.isCollision(self.parent_widget, self.tank.active_bullet.x, self.tank.active_bullet.y, ElementType.BULLET):
-                            print("move: bullet_impact")
+                        if Helper.isCollision(self.parent_widget, self.tank.active_bullet.x, self.tank.active_bullet.y,
+                                              ElementType.BULLET):
+
+                            self.bullet_impact_signal.emit(self.tank.active_bullet.x, self.tank.active_bullet.y,
+                                                           self.tank.active_bullet)
+
                         else:
                             self.bullet_fired_signal.emit(self.tank.active_bullet)
 

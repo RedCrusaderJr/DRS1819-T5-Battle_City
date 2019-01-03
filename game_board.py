@@ -9,6 +9,7 @@ from enemy_tank import EnemyTank
 import os
 from enums import PlayerType, ElementType, WallType, Orientation
 from helper import Helper
+from bullet import Bullet
 
 class GameBoard(QFrame):
     #TODO: refactor ovo staviti negde
@@ -40,6 +41,7 @@ class GameBoard(QFrame):
         self.enemy_dictionary[self.enemies_new_position[0]] = QLabel(self)
 
         self.bullets = []
+        self.bullets_new_posiotion = []
         self.bullet_dictionary = {}
 
         self.board = []
@@ -52,16 +54,19 @@ class GameBoard(QFrame):
         self.move_player_1_thread = MovePlayerThread(self.commands_1, self.player_1, self)
         self.move_player_1_thread.thread_signal.connect(self.playerMoved)
         self.move_player_1_thread.bullet_fired_signal.connect(self.bulletFired)
+        self.move_player_1_thread.bullet_impact_signal.connect(self.bulletImpactedCallback)
 
         self.move_player_2_thread = MovePlayerThread(self.commands_2, self.player_2, self)
         self.move_player_2_thread.thread_signal.connect(self.playerMoved)
         self.move_player_2_thread.bullet_fired_signal.connect(self.bulletFired)
+        self.move_player_2_thread.bullet_impact_signal.connect(self.bulletImpactedCallback)
 
         self.move_enemy_thread = MoveEnemyThread(self)
         self.move_enemy_thread.thread_signal.connect(self.enemyMoved)
 
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.thread_signal.connect(self.bulletMoved)
+        #self.move_bullets_thread.bullet_impact_signal.connect(self.bulletImpacted)
 
     #region EVENTS
     def showEvent(self, *args, **kwargs):
@@ -223,15 +228,21 @@ class GameBoard(QFrame):
         for enemy in self.enemies:
             self.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
 
-        for enemy in self.enemies_new_position:
+        """for enemy in self.enemies_new_position:
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
             enemy_label = self.enemy_dictionary[enemy]
-            self.setGameBoardLabelGeometry(enemy_label, enemy.x, enemy.y)
+            self.setGameBoardLabelGeometry(enemy_label, enemy.x, enemy.y)"""
 
+        #TODO refactor ---> enemy = self.enemies_new_position[i]  TO dimitrije :*
         for i in range(len(self.enemies)):
-            pix = self.enemy_dictionary[self.enemies_new_position[0]].pixmap()
-            transform.rotate(Helper.rotationFunction(self.enemies[0].direction, self.enemies_new_position[0].direction))
-            self.enemy_dictionary[self.enemies_new_position[0]].setPixmap(pix.transformed(transform))
+            self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
+            enemy_label = self.enemy_dictionary[self.enemies_new_position[i]]
+            self.setGameBoardLabelGeometry(enemy_label, self.enemies_new_position[i].x, self.enemies_new_position[i].y)
+
+
+            pix = self.enemy_dictionary[self.enemies_new_position[i]].pixmap()
+            transform.rotate(Helper.rotationFunction(self.enemies[i].direction, self.enemies_new_position[i].direction))
+            self.enemy_dictionary[self.enemies_new_position[i]].setPixmap(pix.transformed(transform))
 
             self.enemies[i].x = self.enemies_new_position[i].x
             self.enemies[i].y = self.enemies_new_position[i].y
@@ -242,6 +253,9 @@ class GameBoard(QFrame):
     def bulletFired(self, bullet):
         self.mutex.lock()
 
+        self.bullets_new_posiotion.append(bullet)
+        bullet_old = Bullet(bullet.type, bullet.x, bullet.y, bullet.orientation, bullet.bullet_owner)
+        self.bullets.append(bullet_old)
         self.bullet_dictionary[bullet] = QLabel(self)
         bullet_label = self.bullet_dictionary[bullet]
         bullet.pm_flying = bullet.pm_flying.scaled(self.getSquareWidth(), self.getSquareHeight())
@@ -254,20 +268,96 @@ class GameBoard(QFrame):
 
         self.mutex.unlock()
 
-    def bulletMoved(self, new_x, new_y, bullet):
+    def bulletMoved(self):
         self.mutex.lock()
 
-        self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-        bullet.setCoordinates(new_x, new_y)
+        for bullet in self.bullets:
+            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
 
-        bullet_label = self.bullet_dictionary[bullet]
-        self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
-        #bullet_label.show()
+        for i in range(len(self.bullets)):
+            bullet = self.bullets_new_posiotion[i]
+            self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+            if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
+                new_x = bullet.x
+                new_y = bullet.y
+                if bullet.orientation is Orientation.UP:
+                    new_y -= 1
+                elif bullet.orientation is Orientation.RIGHT:
+                    new_x += 1
+                elif bullet.orientation is Orientation.DOWN:
+                    new_y += 1
+                elif bullet.orientation is Orientation.LEFT:
+                    new_x -= 1
 
-        self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+                self.bulletImpacted(new_x, new_y, bullet)
+            else:
+                bullet_label = self.bullet_dictionary[bullet]
+                self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+
+                pix = self.bullet_dictionary[bullet].pixmap()
+                self.bullet_dictionary[bullet].setPixmap(pix)
+
+                self.bullets[i].x = bullet.x
+                self.bullets[i].y = bullet.y
+                self.bullets[i].orientation = bullet.orientation
 
         self.mutex.unlock()
 
+    def bulletImpacted(self, new_x, new_y, bullet):
+
+        if 0 <= new_x <= self.BoardWidth - 1 and 0 <= new_y <= self.BoardHeight - 1:
+
+            next_shape = self.getShapeType(new_x, new_y)
+
+            if next_shape is ElementType.WALL:
+                self.setShapeAt(new_x, new_y, ElementType.NONE)
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                bullet.bullet_owner.active_bullet = None
+                if bullet in self.bullet_dictionary:
+                    self.bullet_dictionary[bullet].hide()
+                    del self.bullet_dictionary[bullet]
+                    index = self.bullets_new_posiotion.index(bullet)
+                    self.bullets_new_posiotion.remove(bullet)
+                    del self.bullets[index]
+                self.update()
+
+        else:
+            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+            bullet.bullet_owner.active_bullet = None
+            if bullet in self.bullet_dictionary:
+                self.bullet_dictionary[bullet].hide()
+                index = self.bullets_new_posiotion.index(bullet)
+                self.bullets_new_posiotion.remove(bullet)
+                del self.bullets[index]
+
+    def bulletImpactedCallback(self, new_x, new_y, bullet):
+        self.mutex.lock()
+        if 0 <= new_x <= self.BoardWidth - 1 and 0 <= new_y <= self.BoardHeight - 1:
+
+            next_shape = self.getShapeType(new_x, new_y)
+
+            if next_shape is ElementType.WALL:
+                self.setShapeAt(new_x, new_y, ElementType.NONE)
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                bullet.bullet_owner.active_bullet = None
+                if bullet in self.bullet_dictionary:
+                    self.bullet_dictionary[bullet].hide()
+                    del self.bullet_dictionary[bullet]
+                    index = self.bullets_new_posiotion.index(bullet)
+                    self.bullets_new_posiotion.remove(bullet)
+                    del self.bullets[index]
+                self.update()
+
+
+
+        else:
+            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+            bullet.bullet_owner.active_bullet = None
+            if bullet in self.bullet_dictionary:
+                self.bullet_dictionary[bullet].hide()
+                del self.bullet_dictionary[bullet]
+
+        self.mutex.unlock()
     #endregion
 
     def drawSquare(self, painter, x, y, color):

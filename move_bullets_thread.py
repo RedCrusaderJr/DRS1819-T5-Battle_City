@@ -7,7 +7,8 @@ from helper import Helper
 
 
 class MoveBulletsThread(QThread):
-    thread_signal = pyqtSignal(int, int, Bullet)
+    thread_signal = pyqtSignal()
+    #bullet_impact_signal = pyqtSignal(int, int, Bullet)
 
     def __init__(self, parentQWidget = None):
         super(MoveBulletsThread, self).__init__(parentQWidget)
@@ -16,39 +17,36 @@ class MoveBulletsThread(QThread):
 
     def run(self):
         while not self.was_canceled:
+            self.parent_widget.mutex.lock()
             self.moveBullets()
+            self.parent_widget.mutex.unlock()
             time.sleep(0.5)
 
     def cancel(self):
         self.was_canceled = True
         
     def moveBullets(self):
-        for bullet in self.parent_widget.bullet_dictionary:
-            isChanged = False
-
+        for bullet in self.parent_widget.bullets_new_posiotion:
             if bullet.orientation is Orientation.UP:
-                new_x = bullet.x
-                new_y = bullet.y - 1
-                isChanged = True
+                if not Helper.isCollision(self.parent_widget, bullet.x, bullet.y - 1, ElementType.BULLET):
+                    bullet.y -= 1
             elif bullet.orientation is Orientation.RIGHT:
-                new_x = bullet.x + 1
-                new_y = bullet.y
-                isChanged = True
+                if not Helper.isCollision(self.parent_widget, bullet.x + 1, bullet.y, ElementType.BULLET):
+                    bullet.x += 1
             elif bullet.orientation is Orientation.DOWN:
-                new_x = bullet.x
-                new_y = bullet.y + 1
-                isChanged = True
+                if not Helper.isCollision(self.parent_widget, bullet.x, bullet.y + 1, ElementType.BULLET):
+                    bullet.y += 1
             elif bullet.orientation is Orientation.LEFT:
-                new_x = bullet.x - 1
-                new_y = bullet.y
-                isChanged = True
+                if not Helper.isCollision(self.parent_widget, bullet.x - 1, bullet.y, ElementType.BULLET):
+                    bullet.x -= 1
 
-            if isChanged:
+            """if isChanged:
                 #if impact logic
                 if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.BULLET):
-                    print(f"moveBullets(): bullet: {bullet} impact")
+                    self.bullet_impact_signal.emit(new_x, new_y, bullet)
                     #TODO tank.active_bullet = None !!!
                 else:
-                    print
                     self.thread_signal.emit(new_x, new_y, bullet)
-            # time.sleep(0.05)
+            # time.sleep(0.05)"""
+
+        self.thread_signal.emit()
