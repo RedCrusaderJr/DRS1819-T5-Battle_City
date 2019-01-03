@@ -6,8 +6,6 @@ from bullet import Bullet
 
 class Tank:
 
-    move_signal = pyqtSignal(object, int)
-
     def __init__(self, player_type):
         if player_type == PlayerType.PLAYER_1:
             self.pix_map = QPixmap('./images/tank1.png')

@@ -4,7 +4,6 @@ from enum import Enum
 
 
 class Bullet:
-    move_signal = pyqtSignal(object, int)
 
     def __init__(self, bullet_type, x, y, orientation):
         #print(f"init bullet ({x}, {y}) - orientation: {orientation} - self: {self}")
