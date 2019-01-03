@@ -146,7 +146,7 @@ class GameBoard(QFrame):
         self.board[(y * GameBoard.BoardWidth) + x] = shape_type
 
     def setWalls(self):
-        self.loadLevel(1)
+        self.loadLevel(6)
 
     def loadLevel(self, level_nr=1):
         """ Load specified level
@@ -282,8 +282,14 @@ class GameBoard(QFrame):
     #endregion
 
     def drawSquare(self, painter, x, y, color):
-        colorToDraw = QColor(color)
-        painter.fillRect(x + 1, y + 1, self.getSquareWidth(), self.getSquareHeight(), colorToDraw)
+        if color == 0xf90000:
+            pix = QPixmap('./images/wall.jpg')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        else:
+            pix = QPixmap('./images/lightning.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
 
     def setGameBoardLabelGeometry(self, label, x, y):
         rect = self.contentsRect()

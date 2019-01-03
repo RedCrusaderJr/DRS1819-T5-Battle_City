@@ -6,7 +6,7 @@ class EnemyTank:
 
     def __init__(self, x):
         self.x = x
-        self.y = 2
+        self.y = 0
         self.direction = Orientation.DOWN
         self.pix_map = QPixmap('./images/enemy.png')
         self.active_bullet = None
