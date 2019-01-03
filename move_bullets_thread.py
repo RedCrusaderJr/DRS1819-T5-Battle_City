@@ -20,7 +20,7 @@ class MoveBulletsThread(QThread):
             self.parent_widget.mutex.lock()
             self.moveBullets()
             self.parent_widget.mutex.unlock()
-            time.sleep(0.5)
+            time.sleep(0.05)
 
     def cancel(self):
         self.was_canceled = True

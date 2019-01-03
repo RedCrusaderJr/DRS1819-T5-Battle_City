@@ -264,13 +264,16 @@ class GameBoard(QFrame):
     def bulletFired(self, bullet):
         self.mutex.lock()
 
+        transform = QTransform()
+
         self.bullets_new_posiotion.append(bullet)
         bullet_old = Bullet(bullet.type, bullet.x, bullet.y, bullet.orientation, bullet.bullet_owner)
         self.bullets.append(bullet_old)
         self.bullet_dictionary[bullet] = QLabel(self)
         bullet_label = self.bullet_dictionary[bullet]
         bullet.pm_flying = bullet.pm_flying.scaled(self.getSquareWidth(), self.getSquareHeight())
-        bullet_label.setPixmap(bullet.pm_flying)
+        transform.rotate(Helper.rotationFunction(Orientation.UP, bullet.orientation))
+        bullet_label.setPixmap(bullet.pm_flying.transformed(transform))
 
         self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
         bullet_label.orientation = bullet.orientation
