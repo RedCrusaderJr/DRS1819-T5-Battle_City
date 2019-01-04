@@ -250,6 +250,12 @@ class GameBoard(QFrame):
 
         #TODO refactor ---> enemy = self.enemies_new_position[i]  TO dimitrije :*
         for i in range(len(self.enemies)):
+            for j in range(i+1, len(self.enemies)):
+
+                if self.enemies_new_position[i].x == self.enemies_new_position[j].x and self.enemies_new_position[i].y == self.enemies_new_position[j].y:
+                    self.enemies_new_position[i].x =  self.enemies[i].x
+                    self.enemies_new_position[i].y = self.enemies[i].y
+
             self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
             enemy_label = self.enemy_dictionary[self.enemies_new_position[i]]
             self.setGameBoardLabelGeometry(enemy_label, self.enemies_new_position[i].x, self.enemies_new_position[i].y)
@@ -293,37 +299,40 @@ class GameBoard(QFrame):
         for bullet in self.bullets:
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
 
-        for i in range(len(self.bullets)):
-            bullet = self.bullets_new_posiotion[i]
-            next_shape = self.getShapeType(bullet.x, bullet.y)
-            if next_shape is ElementType.BULLET:
-                self.bulletImpacted(bullet.x, bullet.y, bullet)
-            else:
-                self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
-                if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
-                    new_x = bullet.x
-                    new_y = bullet.y
-                    if bullet.orientation is Orientation.UP:
-                        new_y -= 1
-                    elif bullet.orientation is Orientation.RIGHT:
-                        new_x += 1
-                    elif bullet.orientation is Orientation.DOWN:
-                        new_y += 1
-                    elif bullet.orientation is Orientation.LEFT:
-                        new_x -= 1
-
-                    self.bulletImpacted(new_x, new_y, bullet)
+        try:
+            for i in range(len(self.bullets)):
+                bullet = self.bullets_new_posiotion[i]
+                next_shape = self.getShapeType(bullet.x, bullet.y)
+                if next_shape is ElementType.BULLET:
+                    self.bulletImpacted(bullet.x, bullet.y, bullet)
                 else:
-                    if bullet in self.bullet_dictionary:
-                        bullet_label = self.bullet_dictionary[bullet]
-                        self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+                    self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+                    if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
+                        new_x = bullet.x
+                        new_y = bullet.y
+                        if bullet.orientation is Orientation.UP:
+                            new_y -= 1
+                        elif bullet.orientation is Orientation.RIGHT:
+                            new_x += 1
+                        elif bullet.orientation is Orientation.DOWN:
+                            new_y += 1
+                        elif bullet.orientation is Orientation.LEFT:
+                            new_x -= 1
 
-                        pix = self.bullet_dictionary[bullet].pixmap()
-                        self.bullet_dictionary[bullet].setPixmap(pix)
+                        self.bulletImpacted(new_x, new_y, bullet)
+                    else:
+                        if bullet in self.bullet_dictionary:
+                            bullet_label = self.bullet_dictionary[bullet]
+                            self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
 
-                        self.bullets[i].x = bullet.x
-                        self.bullets[i].y = bullet.y
-                        self.bullets[i].orientation = bullet.orientation
+                            pix = self.bullet_dictionary[bullet].pixmap()
+                            self.bullet_dictionary[bullet].setPixmap(pix)
+
+                            self.bullets[i].x = bullet.x
+                            self.bullets[i].y = bullet.y
+                            self.bullets[i].orientation = bullet.orientation
+        except IndexError:
+            print("index error")
 
         self.mutex.unlock()
 
@@ -348,9 +357,23 @@ class GameBoard(QFrame):
                 other_bullet.bullet_owner.active_bullet = None
                 self.removeBullet(other_bullet)
                 self.update()
+            elif next_shape is ElementType.ENEMY:
+                self.setShapeAt(new_x, new_y, ElementType.NONE)
+                for i in range(len(self.enemies_new_position)):
+                    if (bullet.x == self.enemies_new_position[i].x and bullet.y == self.enemies_new_position[i].y) or (new_x == self.enemies_new_position[i].x and new_y == self.enemies_new_position[i].y):
+                        self.enemy_dictionary[self.enemies_new_position[i]].hide()
+                        del self.enemy_dictionary[self.enemies_new_position[i]]
+                        self.enemies.remove(self.enemies[i])
+                        self.enemies_new_position.remove(self.enemies_new_position[i])
+                        break
+
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+                self.update()
 
         else:
             if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
+                bullet.bullet_owner.active_bullet = None
                 return
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
             self.removeBullet(bullet)
