@@ -10,7 +10,7 @@ import os
 from enums import PlayerType, ElementType, WallType, Orientation
 from helper import Helper
 from bullet import Bullet
-from random import sample
+from random import sample, randint
 import time
 
 class GameBoard(QFrame):
@@ -29,7 +29,6 @@ class GameBoard(QFrame):
         self.initGameBoard()
 
     def initGameBoard(self):
-        self.num_of_active_enemies = 4
         self.num_of_all_enemies = 10
 
         self.player_1 = Tank(PlayerType.PLAYER_1)
@@ -43,7 +42,7 @@ class GameBoard(QFrame):
         self.enemies = []
         self.random_values = []
         self.random_values = sample(range(1, 32), 4)
-        for i in range(self.num_of_active_enemies):
+        for i in range(4):
             self.enemies.append(EnemyTank(self.random_values[i]))
 
         self.enemies_new_position = []
@@ -449,6 +448,12 @@ class GameBoard(QFrame):
                 self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
                 self.removeBullet(bullet)
                 self.update()
+                self.num_of_all_enemies -= 1
+
+                if self.num_of_all_enemies > 0:
+                    self.addEnemy()
+                # else:
+                    # prelazak u sledeci level
 
         else:
             if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
@@ -456,6 +461,25 @@ class GameBoard(QFrame):
                 return
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
             self.removeBullet(bullet)
+
+    def addEnemy(self):
+        rand_x = 0
+        while(True):
+            rand_x = randint(0, self.BoardWidth)
+            if self.getShapeType(rand_x, 0) == ElementType.NONE:
+                break
+
+        self.enemies.append(EnemyTank(rand_x))
+        current_enemy = EnemyTank(rand_x)
+        self.enemies_new_position.append(current_enemy)
+        self.enemy_dictionary[current_enemy] = QLabel(self)
+
+        pixmap3 = self.enemies[len(self.enemies) - 1].pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+        self.enemy_dictionary[current_enemy].setPixmap(pixmap3)
+        self.setGameBoardLabelGeometry(self.enemy_dictionary[current_enemy],
+                                       current_enemy.x, current_enemy.y)
+        self.setShapeAt(current_enemy.x, current_enemy.y, ElementType.ENEMY)
+        self.enemy_dictionary[current_enemy].show()
 
     def removeBullet(self, bullet):
         bullet.bullet_owner.active_bullet = None
