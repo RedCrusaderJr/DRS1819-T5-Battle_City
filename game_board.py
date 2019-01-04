@@ -293,37 +293,40 @@ class GameBoard(QFrame):
         for bullet in self.bullets:
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
 
-        for i in range(len(self.bullets)):
-            bullet = self.bullets_new_posiotion[i]
-            next_shape = self.getShapeType(bullet.x, bullet.y)
-            if next_shape is ElementType.BULLET:
-                self.bulletImpacted(bullet.x, bullet.y, bullet)
-            else:
-                self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
-                if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
-                    new_x = bullet.x
-                    new_y = bullet.y
-                    if bullet.orientation is Orientation.UP:
-                        new_y -= 1
-                    elif bullet.orientation is Orientation.RIGHT:
-                        new_x += 1
-                    elif bullet.orientation is Orientation.DOWN:
-                        new_y += 1
-                    elif bullet.orientation is Orientation.LEFT:
-                        new_x -= 1
-
-                    self.bulletImpacted(new_x, new_y, bullet)
+        try:
+            for i in range(len(self.bullets)):
+                bullet = self.bullets_new_posiotion[i]
+                next_shape = self.getShapeType(bullet.x, bullet.y)
+                if next_shape is ElementType.BULLET:
+                    self.bulletImpacted(bullet.x, bullet.y, bullet)
                 else:
-                    if bullet in self.bullet_dictionary:
-                        bullet_label = self.bullet_dictionary[bullet]
-                        self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+                    self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+                    if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
+                        new_x = bullet.x
+                        new_y = bullet.y
+                        if bullet.orientation is Orientation.UP:
+                            new_y -= 1
+                        elif bullet.orientation is Orientation.RIGHT:
+                            new_x += 1
+                        elif bullet.orientation is Orientation.DOWN:
+                            new_y += 1
+                        elif bullet.orientation is Orientation.LEFT:
+                            new_x -= 1
 
-                        pix = self.bullet_dictionary[bullet].pixmap()
-                        self.bullet_dictionary[bullet].setPixmap(pix)
+                        self.bulletImpacted(new_x, new_y, bullet)
+                    else:
+                        if bullet in self.bullet_dictionary:
+                            bullet_label = self.bullet_dictionary[bullet]
+                            self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
 
-                        self.bullets[i].x = bullet.x
-                        self.bullets[i].y = bullet.y
-                        self.bullets[i].orientation = bullet.orientation
+                            pix = self.bullet_dictionary[bullet].pixmap()
+                            self.bullet_dictionary[bullet].setPixmap(pix)
+
+                            self.bullets[i].x = bullet.x
+                            self.bullets[i].y = bullet.y
+                            self.bullets[i].orientation = bullet.orientation
+        except IndexError:
+            print("index errror")
 
         self.mutex.unlock()
 
