@@ -11,6 +11,7 @@ from enums import PlayerType, ElementType, WallType, Orientation
 from helper import Helper
 from bullet import Bullet
 from random import sample
+import time
 
 class GameBoard(QFrame):
     #TODO: refactor ovo staviti negde
@@ -107,6 +108,7 @@ class GameBoard(QFrame):
         self.move_player_1_thread.start()
         self.move_player_2_thread.start()
         self.move_enemy_thread.start()
+        time.sleep(0.001)
         self.move_bullets_thread.start()
 
     def paintEvent(self, QPaintEvent):
