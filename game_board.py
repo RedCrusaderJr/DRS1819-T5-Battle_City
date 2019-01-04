@@ -10,7 +10,8 @@ import os
 from enums import PlayerType, ElementType, WallType, Orientation
 from helper import Helper
 from bullet import Bullet
-from random import sample
+from random import sample, randint
+import time
 
 class GameBoard(QFrame):
     #TODO: refactor ovo staviti negde
@@ -28,19 +29,20 @@ class GameBoard(QFrame):
         self.initGameBoard()
 
     def initGameBoard(self):
-        self.num_of_active_enemies = 4
         self.num_of_all_enemies = 10
 
         self.player_1 = Tank(PlayerType.PLAYER_1)
         self.player_1_label = QLabel(self)
+        self.player_1_starting_position = ()
         self.player_2 = Tank(PlayerType.PLAYER_2)
         self.player_2_label = QLabel(self)
+        self.player_2_starting_position = ()
 
         #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
         self.enemies = []
         self.random_values = []
         self.random_values = sample(range(1, 32), 4)
-        for i in range(self.num_of_active_enemies):
+        for i in range(4):
             self.enemies.append(EnemyTank(self.random_values[i]))
 
         self.enemies_new_position = []
@@ -105,6 +107,7 @@ class GameBoard(QFrame):
         self.move_player_1_thread.start()
         self.move_player_2_thread.start()
         self.move_enemy_thread.start()
+        time.sleep(0.001)
         self.move_bullets_thread.start()
 
     def paintEvent(self, QPaintEvent):
@@ -174,13 +177,76 @@ class GameBoard(QFrame):
                     self.setShapeAt(x, y, ElementType.BASE)
                 elif ch == "1":
                     self.player_1.setCoordinates(x, y)
+                    self.player_1_starting_position = (x, y)
                 elif ch == "2":
                     self.player_2.setCoordinates(x, y)
+                    self.player_2_starting_position = (x, y)
                 x += 1
             x = 0
             y += 1
         return True
 
+    def setPlayerToStartingPosition(self, old_x, old_y, tank):
+        if (tank.player_type == PlayerType.PLAYER_1):
+            new_x = self.player_1_starting_position[0]
+            new_y = self.player_1_starting_position[1]
+            el_type = ElementType.PLAYER1
+            label = self.player_1_label
+        else:
+            new_x = self.player_2_starting_position[0]
+            new_y = self.player_2_starting_position[1]
+            el_type = ElementType.PLAYER2
+            label = self.player_2_label
+
+        for i in range(new_y, self.BoardHeight):
+            for j in range(new_x, self.BoardWidth):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+            for j in range(0, new_x):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+
+        for i in range(0, new_y):
+            for j in range(new_x, self.BoardWidth):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+            for j in range(0, new_x):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+
+        return False
     def clearBoard(self):
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
@@ -250,6 +316,12 @@ class GameBoard(QFrame):
 
         #TODO refactor ---> enemy = self.enemies_new_position[i]  TO dimitrije :*
         for i in range(len(self.enemies)):
+            for j in range(i+1, len(self.enemies)):
+
+                if self.enemies_new_position[i].x == self.enemies_new_position[j].x and self.enemies_new_position[i].y == self.enemies_new_position[j].y:
+                    self.enemies_new_position[i].x =  self.enemies[i].x
+                    self.enemies_new_position[i].y = self.enemies[i].y
+
             self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
             enemy_label = self.enemy_dictionary[self.enemies_new_position[i]]
             self.setGameBoardLabelGeometry(enemy_label, self.enemies_new_position[i].x, self.enemies_new_position[i].y)
@@ -326,7 +398,7 @@ class GameBoard(QFrame):
                             self.bullets[i].y = bullet.y
                             self.bullets[i].orientation = bullet.orientation
         except IndexError:
-            print("index errror")
+            print("index error")
 
         self.mutex.unlock()
 
@@ -351,12 +423,63 @@ class GameBoard(QFrame):
                 other_bullet.bullet_owner.active_bullet = None
                 self.removeBullet(other_bullet)
                 self.update()
+            elif next_shape is ElementType.PLAYER1:
+                if self.player_1.lives > 0:
+                    self.setPlayerToStartingPosition(self.player_1.x, self.player_1.y, self.player_1)
+                    self.player_1.lives -= 1
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+            elif next_shape is ElementType.PLAYER2:
+                if self.player_2.lives > 0:
+                    self.setPlayerToStartingPosition(self.player_2.x, self.player_2.y, self.player_2)
+                    self.player_2.lives -= 1
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+            elif next_shape is ElementType.ENEMY:
+                self.setShapeAt(new_x, new_y, ElementType.NONE)
+                for i in range(len(self.enemies_new_position)):
+                    if (bullet.x == self.enemies_new_position[i].x and bullet.y == self.enemies_new_position[i].y) or (new_x == self.enemies_new_position[i].x and new_y == self.enemies_new_position[i].y):
+                        self.enemy_dictionary[self.enemies_new_position[i]].hide()
+                        del self.enemy_dictionary[self.enemies_new_position[i]]
+                        self.enemies.remove(self.enemies[i])
+                        self.enemies_new_position.remove(self.enemies_new_position[i])
+                        break
+
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+                self.update()
+                self.num_of_all_enemies -= 1
+
+                if self.num_of_all_enemies > 0:
+                    self.addEnemy()
+                # else:
+                    # prelazak u sledeci level
 
         else:
             if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
+                bullet.bullet_owner.active_bullet = None
                 return
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
             self.removeBullet(bullet)
+
+    def addEnemy(self):
+        rand_x = 0
+        while(True):
+            rand_x = randint(0, self.BoardWidth)
+            if self.getShapeType(rand_x, 0) == ElementType.NONE:
+                break
+
+        self.enemies.append(EnemyTank(rand_x))
+        current_enemy = EnemyTank(rand_x)
+        self.enemies_new_position.append(current_enemy)
+        self.enemy_dictionary[current_enemy] = QLabel(self)
+
+        pixmap3 = self.enemies[len(self.enemies) - 1].pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+        self.enemy_dictionary[current_enemy].setPixmap(pixmap3)
+        self.setGameBoardLabelGeometry(self.enemy_dictionary[current_enemy],
+                                       current_enemy.x, current_enemy.y)
+        self.setShapeAt(current_enemy.x, current_enemy.y, ElementType.ENEMY)
+        self.enemy_dictionary[current_enemy].show()
 
     def removeBullet(self, bullet):
         bullet.bullet_owner.active_bullet = None
