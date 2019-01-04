@@ -33,8 +33,10 @@ class GameBoard(QFrame):
 
         self.player_1 = Tank(PlayerType.PLAYER_1)
         self.player_1_label = QLabel(self)
+        self.player_1_starting_position = ()
         self.player_2 = Tank(PlayerType.PLAYER_2)
         self.player_2_label = QLabel(self)
+        self.player_2_starting_position = ()
 
         #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
         self.enemies = []
@@ -174,13 +176,76 @@ class GameBoard(QFrame):
                     self.setShapeAt(x, y, ElementType.BASE)
                 elif ch == "1":
                     self.player_1.setCoordinates(x, y)
+                    self.player_1_starting_position = (x, y)
                 elif ch == "2":
                     self.player_2.setCoordinates(x, y)
+                    self.player_2_starting_position = (x, y)
                 x += 1
             x = 0
             y += 1
         return True
 
+    def setPlayerToStartingPosition(self, old_x, old_y, tank):
+        if (tank.player_type == PlayerType.PLAYER_1):
+            new_x = self.player_1_starting_position[0]
+            new_y = self.player_1_starting_position[1]
+            el_type = ElementType.PLAYER1
+            label = self.player_1_label
+        else:
+            new_x = self.player_2_starting_position[0]
+            new_y = self.player_2_starting_position[1]
+            el_type = ElementType.PLAYER2
+            label = self.player_2_label
+
+        for i in range(new_y, self.BoardHeight):
+            for j in range(new_x, self.BoardWidth):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+            for j in range(0, new_x):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+
+        for i in range(0, new_y):
+            for j in range(new_x, self.BoardWidth):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+            for j in range(0, new_x):
+                shape = self.getShapeType(j, i)
+                if shape is ElementType.NONE:
+                    self.setShapeAt(old_x, old_y, ElementType.NONE)
+                    self.setGameBoardLabelGeometry(label, j, i)
+                    self.setShapeAt(j, i, el_type)
+                    tank.x = j
+                    tank.y = i
+                    return True
+                elif shape is el_type:
+                    return True
+
+        return False
     def clearBoard(self):
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
@@ -351,9 +416,22 @@ class GameBoard(QFrame):
                 other_bullet.bullet_owner.active_bullet = None
                 self.removeBullet(other_bullet)
                 self.update()
+            elif next_shape is ElementType.PLAYER1:
+                if self.player_1.lives > 0:
+                    self.setPlayerToStartingPosition(self.player_1.x, self.player_1.y, self.player_1)
+                    self.player_1.lives -= 1
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+            elif next_shape is ElementType.PLAYER2:
+                if self.player_2.lives > 0:
+                    self.setPlayerToStartingPosition(self.player_2.x, self.player_2.y, self.player_2)
+                    self.player_2.lives -= 1
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
 
         else:
             if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
+                bullet.bullet_owner.active_bullet = None
                 return
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
             self.removeBullet(bullet)
