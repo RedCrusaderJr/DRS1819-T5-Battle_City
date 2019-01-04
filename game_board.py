@@ -7,7 +7,7 @@ from move_bullets_thread import MoveBulletsThread
 from tank import Tank
 from enemy_tank import EnemyTank
 import os
-from enums import PlayerType, ElementType, WallType, Orientation
+from enums import PlayerType, ElementType, WallType, Orientation, BulletType
 from helper import Helper
 from bullet import Bullet
 from random import sample, randint
@@ -76,6 +76,8 @@ class GameBoard(QFrame):
 
         self.move_enemy_thread = MoveEnemyThread(self)
         self.move_enemy_thread.thread_signal.connect(self.enemyMoved)
+        self.move_enemy_thread.bullet_fired_signal.connect(self.bulletFired)
+        self.move_enemy_thread.bullet_impact_signal.connect(self.bulletImpactedCallback)
 
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.thread_signal.connect(self.bulletMoved)
@@ -423,19 +425,19 @@ class GameBoard(QFrame):
                 other_bullet.bullet_owner.active_bullet = None
                 self.removeBullet(other_bullet)
                 self.update()
-            elif next_shape is ElementType.PLAYER1:
+            elif next_shape is ElementType.PLAYER1 and bullet.type is BulletType.ENEMY:
                 if self.player_1.lives > 0:
                     self.setPlayerToStartingPosition(self.player_1.x, self.player_1.y, self.player_1)
                     self.player_1.lives -= 1
                 self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
                 self.removeBullet(bullet)
-            elif next_shape is ElementType.PLAYER2:
+            elif next_shape is ElementType.PLAYER2 and bullet.type is BulletType.ENEMY:
                 if self.player_2.lives > 0:
                     self.setPlayerToStartingPosition(self.player_2.x, self.player_2.y, self.player_2)
                     self.player_2.lives -= 1
                 self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
                 self.removeBullet(bullet)
-            elif next_shape is ElementType.ENEMY:
+            elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
                 self.setShapeAt(new_x, new_y, ElementType.NONE)
                 for i in range(len(self.enemies_new_position)):
                     if (bullet.x == self.enemies_new_position[i].x and bullet.y == self.enemies_new_position[i].y) or (new_x == self.enemies_new_position[i].x and new_y == self.enemies_new_position[i].y):
@@ -454,6 +456,10 @@ class GameBoard(QFrame):
                     self.addEnemy()
                 # else:
                     # prelazak u sledeci level
+
+            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+            self.removeBullet(bullet)
+            self.update()
 
         else:
             if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):

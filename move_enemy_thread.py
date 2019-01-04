@@ -3,20 +3,28 @@ import time
 from enemy_tank import EnemyTank
 from enums import ElementType, Orientation
 from helper import Helper
+from bullet import Bullet
 
 
 class MoveEnemyThread(QThread):
     thread_signal = pyqtSignal()
+    bullet_fired_signal = pyqtSignal(Bullet)
+    bullet_impact_signal = pyqtSignal(int, int, Bullet)
 
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
         self.was_canceled = False
+        self.iterator = 0
+        self.current_enemy = None
 
     def run(self):
         while not self.was_canceled:
             self.parent_widget.mutex.lock()
             self.moveEnemy()
+            self.iterator += 1
+            if self.iterator >= len(self.parent_widget.enemies_new_position):
+                self.iterator = 0
             self.parent_widget.mutex.unlock()
             time.sleep(0.25)
 
@@ -62,4 +70,16 @@ class MoveEnemyThread(QThread):
                                                                                                         enemy.y))
                     enemy.direction = Orientation.UP
 
+        if self.iterator >= len(self.parent_widget.enemies_new_position):
+            self.iterator = 0
+        current_enemy = self.parent_widget.enemies_new_position[self.iterator]
+        if current_enemy.fireBullet():
+            if Helper.isCollision(self.parent_widget, current_enemy.active_bullet.x, current_enemy.active_bullet.y,
+                                  ElementType.BULLET):
+
+                self.bullet_impact_signal.emit(current_enemy.active_bullet.x, current_enemy.active_bullet.y,
+                                               current_enemy.active_bullet)
+
+            else:
+                self.bullet_fired_signal.emit(current_enemy.active_bullet)
         self.thread_signal.emit()
