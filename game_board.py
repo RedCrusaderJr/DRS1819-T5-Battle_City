@@ -118,12 +118,12 @@ class GameBoard(QFrame):
                     self.drawSquare(painter,
                                     rect.left() + j * self.getSquareWidth(),
                                     board_top + i * self.getSquareHeight(),
-                                    0xf90000)
+                                    ElementType.WALL)
                 elif shape_type == ElementType.BASE:
                     self.drawSquare(painter,
                                     rect.left() + j * self.getSquareWidth(),
                                     board_top + i * self.getSquareHeight(),
-                                    0xeaa615)
+                                    ElementType.BASE)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Up or  event.key() == Qt.Key_Down or  \
@@ -196,6 +196,11 @@ class GameBoard(QFrame):
 
     def getSquareHeight(self):
         return self.contentsRect().height() // GameBoard.BoardHeight
+
+    def findBulletAt(self, x, y):
+        for bullet in self.bullets_new_posiotion:
+            if bullet.x == x and bullet.y == y:
+                return bullet
     #endregion
 
     #region CALLBACKS
@@ -290,30 +295,35 @@ class GameBoard(QFrame):
 
         for i in range(len(self.bullets)):
             bullet = self.bullets_new_posiotion[i]
-            self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
-            if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
-                new_x = bullet.x
-                new_y = bullet.y
-                if bullet.orientation is Orientation.UP:
-                    new_y -= 1
-                elif bullet.orientation is Orientation.RIGHT:
-                    new_x += 1
-                elif bullet.orientation is Orientation.DOWN:
-                    new_y += 1
-                elif bullet.orientation is Orientation.LEFT:
-                    new_x -= 1
-
-                self.bulletImpacted(new_x, new_y, bullet)
+            next_shape = self.getShapeType(bullet.x, bullet.y)
+            if next_shape is ElementType.BULLET:
+                self.bulletImpacted(bullet.x, bullet.y, bullet)
             else:
-                bullet_label = self.bullet_dictionary[bullet]
-                self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+                self.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+                if (self.bullets[i].x == self.bullets_new_posiotion[i].x and self.bullets[i].y == self.bullets_new_posiotion[i].y):
+                    new_x = bullet.x
+                    new_y = bullet.y
+                    if bullet.orientation is Orientation.UP:
+                        new_y -= 1
+                    elif bullet.orientation is Orientation.RIGHT:
+                        new_x += 1
+                    elif bullet.orientation is Orientation.DOWN:
+                        new_y += 1
+                    elif bullet.orientation is Orientation.LEFT:
+                        new_x -= 1
 
-                pix = self.bullet_dictionary[bullet].pixmap()
-                self.bullet_dictionary[bullet].setPixmap(pix)
+                    self.bulletImpacted(new_x, new_y, bullet)
+                else:
+                    if bullet in self.bullet_dictionary:
+                        bullet_label = self.bullet_dictionary[bullet]
+                        self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
 
-                self.bullets[i].x = bullet.x
-                self.bullets[i].y = bullet.y
-                self.bullets[i].orientation = bullet.orientation
+                        pix = self.bullet_dictionary[bullet].pixmap()
+                        self.bullet_dictionary[bullet].setPixmap(pix)
+
+                        self.bullets[i].x = bullet.x
+                        self.bullets[i].y = bullet.y
+                        self.bullets[i].orientation = bullet.orientation
 
         self.mutex.unlock()
 
@@ -326,60 +336,46 @@ class GameBoard(QFrame):
             if next_shape is ElementType.WALL:
                 self.setShapeAt(new_x, new_y, ElementType.NONE)
                 self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-                bullet.bullet_owner.active_bullet = None
-                if bullet in self.bullet_dictionary:
-                    self.bullet_dictionary[bullet].hide()
-                    del self.bullet_dictionary[bullet]
-                    index = self.bullets_new_posiotion.index(bullet)
-                    self.bullets_new_posiotion.remove(bullet)
-                    del self.bullets[index]
+                self.removeBullet(bullet)
+                self.update()
+            elif next_shape is ElementType.BULLET:
+                #naci drugi bullet
+                other_bullet = self.findBulletAt(new_x, new_y)
+                #obrisati oba
+                self.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE)
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+                other_bullet.bullet_owner.active_bullet = None
+                self.removeBullet(other_bullet)
                 self.update()
 
         else:
+            if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
+                return
             self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullet.bullet_owner.active_bullet = None
-            if bullet in self.bullet_dictionary:
-                self.bullet_dictionary[bullet].hide()
-                index = self.bullets_new_posiotion.index(bullet)
-                self.bullets_new_posiotion.remove(bullet)
-                del self.bullets[index]
+            self.removeBullet(bullet)
+
+    def removeBullet(self, bullet):
+        bullet.bullet_owner.active_bullet = None
+        if bullet in self.bullet_dictionary:
+            self.bullet_dictionary[bullet].hide()
+            del self.bullet_dictionary[bullet]
+            index = self.bullets_new_posiotion.index(bullet)
+            self.bullets_new_posiotion.remove(bullet)
+            del self.bullets[index]
 
     def bulletImpactedCallback(self, new_x, new_y, bullet):
         self.mutex.lock()
-        if 0 <= new_x <= self.BoardWidth - 1 and 0 <= new_y <= self.BoardHeight - 1:
-
-            next_shape = self.getShapeType(new_x, new_y)
-
-            if next_shape is ElementType.WALL:
-                self.setShapeAt(new_x, new_y, ElementType.NONE)
-                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-                bullet.bullet_owner.active_bullet = None
-                if bullet in self.bullet_dictionary:
-                    self.bullet_dictionary[bullet].hide()
-                    del self.bullet_dictionary[bullet]
-                    index = self.bullets_new_posiotion.index(bullet)
-                    self.bullets_new_posiotion.remove(bullet)
-                    del self.bullets[index]
-                self.update()
-
-
-
-        else:
-            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullet.bullet_owner.active_bullet = None
-            if bullet in self.bullet_dictionary:
-                self.bullet_dictionary[bullet].hide()
-                del self.bullet_dictionary[bullet]
-
+        self.bulletImpacted(new_x, new_y, bullet)
         self.mutex.unlock()
     #endregion
 
-    def drawSquare(self, painter, x, y, color):
-        if color == 0xf90000:
+    def drawSquare(self, painter, x, y, type):
+        if type == ElementType.WALL:
             pix = QPixmap('./images/wall.jpg')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        else:
+        elif type == ElementType.BASE:
             pix = QPixmap('./images/lightning.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)

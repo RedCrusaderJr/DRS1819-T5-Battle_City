@@ -20,6 +20,7 @@ class MoveEnemyThread(QThread):
 
     def cancel(self):
         self.was_canceled = True
+        
 
     def moveEnemy(self):
         for enemy in self.parent_widget.enemies_new_position:
@@ -32,6 +33,7 @@ class MoveEnemyThread(QThread):
             elif enemy.direction == Orientation.RIGHT:
                 if not Helper.isCollision(self.parent_widget, enemy.x+1, enemy.y, ElementType.ENEMY):
                     enemy.x += 1
+                    
                 else:
                     enemy.direction = Orientation.DOWN
 
