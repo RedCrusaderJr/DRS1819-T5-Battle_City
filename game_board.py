@@ -315,6 +315,12 @@ class GameBoard(QFrame):
 
         #TODO refactor ---> enemy = self.enemies_new_position[i]  TO dimitrije :*
         for i in range(len(self.enemies)):
+            for j in range(i+1, len(self.enemies)):
+
+                if self.enemies_new_position[i].x == self.enemies_new_position[j].x and self.enemies_new_position[i].y == self.enemies_new_position[j].y:
+                    self.enemies_new_position[i].x =  self.enemies[i].x
+                    self.enemies_new_position[i].y = self.enemies[i].y
+
             self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
             enemy_label = self.enemy_dictionary[self.enemies_new_position[i]]
             self.setGameBoardLabelGeometry(enemy_label, self.enemies_new_position[i].x, self.enemies_new_position[i].y)
@@ -391,7 +397,7 @@ class GameBoard(QFrame):
                             self.bullets[i].y = bullet.y
                             self.bullets[i].orientation = bullet.orientation
         except IndexError:
-            print("index errror")
+            print("index error")
 
         self.mutex.unlock()
 
@@ -428,6 +434,19 @@ class GameBoard(QFrame):
                     self.player_2.lives -= 1
                 self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
                 self.removeBullet(bullet)
+            elif next_shape is ElementType.ENEMY:
+                self.setShapeAt(new_x, new_y, ElementType.NONE)
+                for i in range(len(self.enemies_new_position)):
+                    if (bullet.x == self.enemies_new_position[i].x and bullet.y == self.enemies_new_position[i].y) or (new_x == self.enemies_new_position[i].x and new_y == self.enemies_new_position[i].y):
+                        self.enemy_dictionary[self.enemies_new_position[i]].hide()
+                        del self.enemy_dictionary[self.enemies_new_position[i]]
+                        self.enemies.remove(self.enemies[i])
+                        self.enemies_new_position.remove(self.enemies_new_position[i])
+                        break
+
+                self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                self.removeBullet(bullet)
+                self.update()
 
         else:
             if (bullet.x < 0 or bullet.x > self.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
