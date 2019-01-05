@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from game_board import GameBoard
 from stat_frame import StatFrame
 import sys
-#from level import Level
+
 
 class FormWidget(QWidget):
 
@@ -23,13 +23,9 @@ class FormWidget(QWidget):
         self.layout.addWidget(self.stat_frame)
 
         self.setLayout(self.layout)
-        # self.game_board_frame.setFrameShape(QFrame.StyledPanel)
-
-        # self.stat_frame.setFrameShape(QFrame.StyledPanel)
-
-        # self.splitter = QSplitter(Qt.Vertical)
-        # self.splitter.addWidget(self.game_board_frame)
-        # self.splitter.addWidget(self.stat_frame)
+    
+    def onResize(self):
+        print()
 
 class BattleCity(QMainWindow):
 
@@ -65,7 +61,7 @@ class BattleCity(QMainWindow):
         settings_menu.addAction(start_act)
 
         self.show()
-
+        
     def startGame(self):
         self.form_widget = FormWidget(self)
         self.setCentralWidget(self.form_widget)
@@ -87,6 +83,10 @@ class BattleCity(QMainWindow):
     def toggleMulti(self, mode):
         self.status_bar.showMessage("MODE: MULTIPLAYER")
 
+    def onResize(self):
+        print()
+        
+        
 if __name__ == "__main__":
     app = QApplication([])
 

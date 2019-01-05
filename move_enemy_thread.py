@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QTransform
 import time
 from enemy_tank import EnemyTank
 from enums import ElementType, Orientation
@@ -8,8 +9,8 @@ from bullet import Bullet
 
 class MoveEnemyThread(QThread):
     thread_signal = pyqtSignal()
-    bullet_fired_signal = pyqtSignal(Bullet)
-    bullet_impact_signal = pyqtSignal(int, int, Bullet)
+    bullet_fired_signal = pyqtSignal(Bullet, QTransform)
+    bullet_impact_signal = pyqtSignal(list, list, list)
 
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThread, self).__init__(parentQWidget)
@@ -39,8 +40,9 @@ class MoveEnemyThread(QThread):
                     enemy.y -= 1
                 else:
                     if self.parent_widget.getShapeType(enemy.x, enemy.y) == ElementType.BULLET:
-                        self.parent_widget.bulletImpacted(enemy.x, enemy.y, self.parent_widget.findBulletAt(enemy.x,
-                                                                                                        enemy.y - 1))
+                        self.parent_widget.bulletImpacted(enemy.x,
+                                                          enemy.y,
+                                                          self.parent_widget.findBulletAt(enemy.x, enemy.y - 1))
                     enemy.direction = Orientation.RIGHT
 
             elif enemy.direction == Orientation.RIGHT:
@@ -48,8 +50,9 @@ class MoveEnemyThread(QThread):
                     enemy.x += 1
                 else:
                     if self.parent_widget.getShapeType(enemy.x, enemy.y) == ElementType.BULLET:
-                        self.parent_widget.bulletImpacted(enemy.x, enemy.y, self.parent_widget.findBulletAt(enemy.x + 1,
-                                                                                                        enemy.y))
+                        self.parent_widget.bulletImpacted(enemy.x,
+                                                          enemy.y,
+                                                          self.parent_widget.findBulletAt(enemy.x + 1, enemy.y))
                     enemy.direction = Orientation.DOWN
 
             elif enemy.direction == Orientation.DOWN:
@@ -57,8 +60,9 @@ class MoveEnemyThread(QThread):
                     enemy.y += 1
                 else:
                     if self.parent_widget.getShapeType(enemy.x, enemy.y) == ElementType.BULLET:
-                        self.parent_widget.bulletImpacted(enemy.x, enemy.y, self.parent_widget.findBulletAt(enemy.x,
-                                                                                                        enemy.y + 1))
+                        self.parent_widget.bulletImpacted(enemy.x, 
+                                                          enemy.y, 
+                                                          self.parent_widget.findBulletAt(enemy.x, enemy.y + 1))
                     enemy.direction = Orientation.LEFT
 
             else:
@@ -66,20 +70,37 @@ class MoveEnemyThread(QThread):
                     enemy.x -= 1
                 else:
                     if self.parent_widget.getShapeType(enemy.x, enemy.y) == ElementType.BULLET:
-                        self.parent_widget.bulletImpacted(enemy.x, enemy.y, self.parent_widget.findBulletAt(enemy.x - 1,
-                                                                                                        enemy.y))
+                        self.parent_widget.bulletImpacted(enemy.x, 
+                                                          enemy.y, 
+                                                          self.parent_widget.findBulletAt(enemy.x - 1, enemy.y))
                     enemy.direction = Orientation.UP
 
         if self.iterator >= len(self.parent_widget.enemies_new_position):
             self.iterator = 0
+
+        #try:
         current_enemy = self.parent_widget.enemies_new_position[self.iterator]
         if current_enemy.fireBullet():
-            if Helper.isCollision(self.parent_widget, current_enemy.active_bullet.x, current_enemy.active_bullet.y,
+            if Helper.isCollision(self.parent_widget,
+                                  current_enemy.active_bullet.x,
+                                  current_enemy.active_bullet.y,
                                   ElementType.BULLET):
-
-                self.bullet_impact_signal.emit(current_enemy.active_bullet.x, current_enemy.active_bullet.y,
-                                               current_enemy.active_bullet)
+                print("bullet impact on fire")
+                #self.bullet_impact_signal.emit(current_enemy.active_bullet.x,
+                                              # current_enemy.active_bullet.y,
+                                              # current_enemy.active_bullet)
 
             else:
-                self.bullet_fired_signal.emit(current_enemy.active_bullet)
+                self.bulletFired(current_enemy.active_bullet)
+        #except IndexError:
+        #   print("moveEnemy(): IndexError")
+
         self.thread_signal.emit()
+
+    def bulletFired(self, bullet):
+        transform = QTransform()
+        transform.rotate(Helper.rotationFunction(Orientation.UP, bullet.orientation))
+
+        self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+
+        self.bullet_fired_signal.emit(bullet, transform)
