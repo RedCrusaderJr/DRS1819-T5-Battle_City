@@ -39,19 +39,14 @@ class GameBoard(QFrame):
         self.player_2_starting_position = ()
 
         #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
-        self.enemies = []
+
         self.random_values = []
         self.random_values = sample(range(1, 32), 4)
-        for i in range(4):
-            self.enemies.append(EnemyTank(self.random_values[i]))
-
-        self.enemies_new_position = []
-        for i in range(len(self.enemies)):
-            self.enemies_new_position.append(EnemyTank(self.enemies[i].x))
 
         self.enemy_dictionary = {}
-        for i in range(len(self.enemies)):
-            self.enemy_dictionary[self.enemies_new_position[i]] = QLabel(self)
+        for i in range(len(self.enemy_dictionary)):
+            self.enemy_dictionary[EnemyTank(self.random_values[i])] = QLabel(self)
+
 
         self.bullets = []
         self.bullets_new_posiotion = []
@@ -75,9 +70,9 @@ class GameBoard(QFrame):
         self.move_player_2_thread.bullet_impact_signal.connect(self.bulletMoved)
 
         self.move_enemy_thread = MoveEnemyThread(self)
-        self.move_enemy_thread.thread_signal.connect(self.enemyMoved)
         self.move_enemy_thread.bullet_fired_signal.connect(self.bulletFired)
         self.move_enemy_thread.bullet_impact_signal.connect(self.bulletMoved)
+        self.move_enemy_thread.enemy_move_signal.connect(self.enemyCallback)
 
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
@@ -298,8 +293,31 @@ class GameBoard(QFrame):
     #endregion
 
     #region CALLBACKS
+    def enemyCallback(self, movedEnemies, rotatedEnemies, diedEnemies, diedBullets):
+        for enemy in movedEnemies:
+            self.setGameBoardLabelGeometry(self.enemy_dictionary[enemy], enemy.x,enemy.y)
+
+        for element in rotatedEnemies:
+            enemy, direction = element
+            transform = QTransform()
+            pix = self.enemy_dictionary[enemy].pixmap()
+            transform.rotate(Helper.rotationFunction(enemy.direction, direction))
+            enemy.direction = direction
+            self.enemy_dictionary[enemy].setPixmap(pix.transformed(transform))
+
+        for enemy in diedEnemies:
+            self.enemy_dictionary[enemy].hide()
+            del self.enemy_dictionary[enemy]
+
+        for bullet in diedBullets:
+            self.bullet_dictionary[bullet].hide()
+            del self.bullet_dictionary[bullet]
+
+
     def playerMoved(self, tank, transform):
         #self.mutex.lock()
+
+        transform = QTransform()
 
         if tank.player_type == PlayerType.PLAYER_1:
             gb_player = self.player_1
@@ -316,40 +334,7 @@ class GameBoard(QFrame):
 
         #self.mutex.unlock()
 
-    def enemyMoved(self):
-        self.mutex.lock()
 
-        for enemy in self.enemies:
-            self.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
-
-        """for enemy in self.enemies_new_position:
-            self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
-            enemy_label = self.enemy_dictionary[enemy]
-            self.setGameBoardLabelGeometry(enemy_label, enemy.x, enemy.y)"""
-
-        #TODO refactor ---> enemy = self.enemies_new_position[i]  TO dimitrije :*
-        for i in range(len(self.enemies)):
-            for j in range(i+1, len(self.enemies)):
-
-                if self.enemies_new_position[i].x == self.enemies_new_position[j].x and self.enemies_new_position[i].y == self.enemies_new_position[j].y:
-                    self.enemies_new_position[i].x =  self.enemies[i].x
-                    self.enemies_new_position[i].y = self.enemies[i].y
-
-            self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
-            enemy_label = self.enemy_dictionary[self.enemies_new_position[i]]
-            self.setGameBoardLabelGeometry(enemy_label, self.enemies_new_position[i].x, self.enemies_new_position[i].y)
-
-
-            transform = QTransform()
-            pix = self.enemy_dictionary[self.enemies_new_position[i]].pixmap()
-            transform.rotate(Helper.rotationFunction(self.enemies[i].direction, self.enemies_new_position[i].direction))
-            self.enemy_dictionary[self.enemies_new_position[i]].setPixmap(pix.transformed(transform))
-
-            self.enemies[i].x = self.enemies_new_position[i].x
-            self.enemies[i].y = self.enemies_new_position[i].y
-            self.enemies[i].direction = self.enemies_new_position[i].direction
-
-        self.mutex.unlock()
 
     def bulletFired(self, bullet, transform):
         #self.mutex.lock()
