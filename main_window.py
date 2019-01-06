@@ -61,7 +61,7 @@ class BattleCity(QMainWindow):
         settings_menu.addAction(start_act)
 
         self.show()
-        
+
     def startGame(self):
         self.form_widget = FormWidget(self)
         self.setCentralWidget(self.form_widget)

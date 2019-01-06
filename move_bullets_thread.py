@@ -2,7 +2,7 @@ from PyQt5.QtCore import QThread, Qt, pyqtSignal
 import game_board as gb
 import time
 from bullet import Bullet
-from enums import Orientation, ElementType
+from enums import Orientation, ElementType, BulletType
 from helper import Helper
 
 
@@ -26,29 +26,6 @@ class MoveBulletsThread(QThread):
         self.was_canceled = True
         
     def moveBullets(self):
-        """
-        for bullet in self.parent_widget.bullet_dictionary:
-            if bullet.orientation is Orientation.UP:
-                if not Helper.isCollision(self.parent_widget, bullet.x, bullet.y - 1, ElementType.BULLET):
-                    bullet.y -= 1
-            elif bullet.orientation is Orientation.RIGHT:
-                if not Helper.isCollision(self.parent_widget, bullet.x + 1, bullet.y, ElementType.BULLET):
-                    bullet.x += 1
-            elif bullet.orientation is Orientation.DOWN:
-                if not Helper.isCollision(self.parent_widget, bullet.x, bullet.y + 1, ElementType.BULLET):
-                    bullet.y += 1
-            elif bullet.orientation is Orientation.LEFT:
-                if not Helper.isCollision(self.parent_widget, bullet.x - 1, bullet.y, ElementType.BULLET):
-                    bullet.x -= 1
-
-            if isChanged:
-                #if impact logic
-                if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.BULLET):
-                    self.bullet_impact_signal.emit(new_x, new_y, bullet)
-                    #TODO tank.active_bullet = None !!!
-                else:
-                    self.thread_signal.emit(new_x, new_y, bullet)
-            # time.sleep(0.05)"""
         bullets_with_new_position = []
         bullets_to_be_removed = []
         enemies_to_be_removed = []
@@ -69,7 +46,7 @@ class MoveBulletsThread(QThread):
                 new_x -= 1
 
             if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.BULLET):
-                print("bullet_impact")
+                #print("moveBullets(): bullet_impact")
                 self.bulletImpact(new_x, new_y, bullet, bullets_to_be_removed, enemies_to_be_removed)
 
             else:
@@ -84,11 +61,7 @@ class MoveBulletsThread(QThread):
 
     def bulletImpact(self, new_x, new_y, bullet, bullets_to_be_removed, enemies_to_be_removed):
         if not(0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):
-            #if (bullet.x < 0 or bullet.x > self.parent_widget.BoardWidth - 1) or (bullet.y < 0 or bullet.y > self.BoardHeight - 1):
-             #   bullet.bullet_owner.active_bullet = None
-              #  return
             self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            #bullet.bullet_owner.active_bullet = None
             bullets_to_be_removed.append(bullet)
             return
 
@@ -96,17 +69,14 @@ class MoveBulletsThread(QThread):
 
         if next_shape is ElementType.WALL:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
-            self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullets_to_be_removed.append(bullet)
 
         elif next_shape is ElementType.BULLET:
-            self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullets_to_be_removed.append(bullet)
-
             other_bullet = self.findBulletAt(new_x, new_y)
-            self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE)
-            bullets_to_be_removed.append(other_bullet)
-
+            if other_bullet is not None:
+                self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
+                bullets_to_be_removed.append(other_bullet)
+            else:
+                print("bulletImpact(): other_bullet is None")
 
         elif (next_shape is ElementType.PLAYER1 or next_shape is ElementType.PLAYER2) and bullet.type is BulletType.ENEMY:
             if next_shape is ElementType.PLAYER1:
@@ -117,24 +87,22 @@ class MoveBulletsThread(QThread):
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
                 gb_player.lives -= 1
-            self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullets_to_be_removed.append(bullet)
-
+            else:
+                print(f"game over for {next_shape}")
 
         elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
             for enemy in self.parent_widget.enemy_dictionary:
-                if new_x == enemy.x and  new_y == enemy.y:
-                    enemies_to_be_removed.append()
+                if new_x == enemy.x and new_y == enemy.y:
+                    enemies_to_be_removed.append(enemy)
                     break
-            self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullets_to_be_removed.append(bullet)
 
         elif next_shape is ElementType.BASE:
-            self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-            bullets_to_be_removed.append(bullet)
             print("game over")
+
+        self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+        bullets_to_be_removed.append(bullet)
 
     def findBulletAt(self, x, y):
         for bullet in self.parent_widget.bullet_dictionary:

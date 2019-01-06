@@ -23,10 +23,6 @@ class Helper:
             elif element_type is ElementType.BULLET:
                 if next_position_shape is ElementType.NONE:
                     is_collision = False
-            #    else:
-             #       print("isCollision(bullet): True")
-
-            #if element_type is ElementType.PLAYER1:
-            #    print(f"new_x: {new_x}, new_y: {new_y} is_collision: {is_collision}")
+                    print(f"Collision: bullet with {element_type}")
 
         return is_collision

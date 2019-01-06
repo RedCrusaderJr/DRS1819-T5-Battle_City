@@ -30,7 +30,7 @@ class Tank:
         self.y = y
 
     def fireBullet(self):
-        isBulletFired = False
+        is_bullet_fired = False
 
         if self.active_bullet is None:
             bullet_x = self.x
@@ -39,21 +39,21 @@ class Tank:
             if self.orientation is Orientation.UP:
                 bullet_x = self.x
                 bullet_y = self.y - 1
-                isBulletFired = True
+                is_bullet_fired = True
             elif self.orientation is Orientation.RIGHT:
                 bullet_x = self.x + 1
                 bullet_y = self.y
-                isBulletFired = True
+                is_bullet_fired = True
             elif self.orientation is Orientation.DOWN:
                 bullet_x = self.x
                 bullet_y = self.y + 1
-                isBulletFired = True
+                is_bullet_fired = True
             elif self.orientation is Orientation.LEFT:
                 bullet_x = self.x - 1
                 bullet_y = self.y
-                isBulletFired = True
+                is_bullet_fired = True
 
             self.active_bullet = Bullet(BulletType.FRIEND, bullet_x, bullet_y, self.orientation, self)
-            print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
-
-        return isBulletFired
+            #print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
+        
+        return is_bullet_fired

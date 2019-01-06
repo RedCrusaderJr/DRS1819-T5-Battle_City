@@ -38,23 +38,15 @@ class GameBoard(QFrame):
         self.player_2_label = QLabel(self)
         self.player_2_starting_position = ()
 
-        #self.player1.pixmap1 = self.player1.pixmap.scaled(self.squareWidth(), self.squareHeight())
-
         self.random_values = []
         self.random_values = sample(range(1, 32), 4)
 
+        self.bullet_dictionary = {}
         self.enemy_dictionary = {}
-        for i in range(len(self.enemy_dictionary)):
+        for i in range(4):
             self.enemy_dictionary[EnemyTank(self.random_values[i])] = QLabel(self)
 
-
-        self.bullets = []
-        self.bullets_new_posiotion = []
-        self.bullet_dictionary = {}
-
         self.board = []
-
-
         self.clearBoard()
         self.setFocusPolicy(Qt.StrongFocus)
         self.setWalls()
@@ -76,7 +68,6 @@ class GameBoard(QFrame):
 
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
-        #self.move_bullets_thread.bullet_impact_signal.connect(self.bulletImpacted)
 
     #region EVENTS
     def showEvent(self, *args, **kwargs):
@@ -95,11 +86,11 @@ class GameBoard(QFrame):
         self.player_2_label.orientation = Orientation.UP
         self.setShapeAt(self.player_2.x, self.player_2.y, ElementType.PLAYER2)
 
-        for i in range(len(self.enemies)):
-            pixmap3 = self.enemies[i].pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
-            self.enemy_dictionary[self.enemies_new_position[i]].setPixmap(pixmap3)
-            self.setGameBoardLabelGeometry(self.enemy_dictionary[self.enemies_new_position[i]], self.enemies_new_position[i].x, self.enemies_new_position[i].y)
-            self.setShapeAt(self.enemies_new_position[i].x, self.enemies_new_position[i].y, ElementType.ENEMY)
+        for enemy in self.enemy_dictionary:
+            pixmap3 = enemy.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+            self.enemy_dictionary[enemy].setPixmap(pixmap3)
+            self.setGameBoardLabelGeometry(self.enemy_dictionary[enemy], enemy.x, enemy.y)
+            self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
 
         self.move_player_1_thread.start()
         self.move_player_2_thread.start()
@@ -293,32 +284,48 @@ class GameBoard(QFrame):
     #endregion
 
     #region CALLBACKS
-    def enemyCallback(self, movedEnemies, rotatedEnemies, diedEnemies, diedBullets):
-        for enemy in movedEnemies:
-            self.setGameBoardLabelGeometry(self.enemy_dictionary[enemy], enemy.x,enemy.y)
+    def enemyCallback(self, enemies_with_new_position, enemies_with_new_orientation, enemies_to_be_removed, bullets_to_be_removed):
+        for enemy in enemies_with_new_position:
+            if enemy in self.enemy_dictionary:
+                enemy_label = self.enemy_dictionary[enemy]
+                self.setGameBoardLabelGeometry(enemy_label, enemy.x,enemy.y)
+            else:
+                print(f"enemy({enemy}) from enemies_with_new_position is not in enemy_dictionary")
 
-        for element in rotatedEnemies:
-            enemy, direction = element
-            transform = QTransform()
-            pix = self.enemy_dictionary[enemy].pixmap()
-            transform.rotate(Helper.rotationFunction(enemy.direction, direction))
-            enemy.direction = direction
-            self.enemy_dictionary[enemy].setPixmap(pix.transformed(transform))
+        for element in enemies_with_new_orientation:
+            enemy, transform = element
+            if enemy in self.enemy_dictionary:
+                enemy_label = self.enemy_dictionary[enemy]
+                pix = enemy_label.pixmap()
+                enemy_label.setPixmap(pix.transformed(transform))
+            else:
+                print(f"enemy({enemy}) from enemies_with_new_orientation is not in enemy_dictionary")
 
-        for enemy in diedEnemies:
-            self.enemy_dictionary[enemy].hide()
-            del self.enemy_dictionary[enemy]
+        for enemy in enemies_to_be_removed:
+            if enemy in self.enemy_dictionary:
+                enemy_label = self.enemy_dictionary[enemy]
+                enemy_label.hide()
+                del self.enemy_dictionary[enemy]
 
-        for bullet in diedBullets:
-            self.bullet_dictionary[bullet].hide()
-            del self.bullet_dictionary[bullet]
+                self.num_of_all_enemies -= 1
+                if self.num_of_all_enemies > 0:
+                    self.addEnemy()
+                # else:
+                # prelazak u sledeci level
+            else:
+                print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
 
+        for bullet in bullets_to_be_removed:
+            if bullet in self.bullet_dictionary:
+                bullet_label = self.bullet_dictionary[bullet]
+                bullet_label.hide()
+                del self.bullet_dictionary[bullet]
+            else:
+                print(f"bullet({bullet}) from bullets_to_be_removed is not in bullet_dictionary")
 
+        self.update()
+        
     def playerMoved(self, tank, transform):
-        #self.mutex.lock()
-
-        transform = QTransform()
-
         if tank.player_type == PlayerType.PLAYER_1:
             gb_player = self.player_1
             gb_player_label = self.player_1_label
@@ -332,17 +339,7 @@ class GameBoard(QFrame):
 
         self.setGameBoardLabelGeometry(gb_player_label, gb_player.x, gb_player.y)
 
-        #self.mutex.unlock()
-
-
-
-    def bulletFired(self, bullet, transform):
-        #self.mutex.lock()
-
-        #self.bullets_new_posiotion.append(bullet)
-        #bullet_old = Bullet(bullet.type, bullet.x, bullet.y, bullet.orientation, bullet.bullet_owner)
-        #self.bullets.append(bullet_old)
-        
+    def bulletFired(self, bullet, transform):    
         self.bullet_dictionary[bullet] = QLabel(self)
         bullet_label = self.bullet_dictionary[bullet]
 
@@ -352,14 +349,14 @@ class GameBoard(QFrame):
         self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
         bullet_label.orientation = bullet.orientation
         bullet_label.show()
-        
-        #self.mutex.unlock()
 
     def bulletMoved(self, bullets_with_new_posiotion, bullets_to_be_removed, enemies_to_be_removed):
         for bullet in bullets_with_new_posiotion:
             if bullet in self.bullet_dictionary:
                 bullet_label = self.bullet_dictionary[bullet]
                 self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
+            else:
+                print(f"bullet({bullet}) from bullets_with_new_posiotion is not in bullet_dictionary")
 
                 #if pocetna slicica:
                     #pix = self.bullet_dictionary[bullet].pixmap()
@@ -368,19 +365,26 @@ class GameBoard(QFrame):
         for bullet in bullets_to_be_removed:
             bullet.bullet_owner.active_bullet = None
             if bullet in self.bullet_dictionary:
-                self.bullet_dictionary[bullet].hide()
+                bullet_label = self.bullet_dictionary[bullet]
+                bullet_label.hide()
                 del self.bullet_dictionary[bullet]
+            else:
+                print(f"bullet({bullet}) from bullets_to_be_removed is not in bullet_dictionary")
 
         for enemy in enemies_to_be_removed:
             if enemy in self.enemy_dictionary:
-                self.enemy_dictionary[enemy].hide()
+                enemy_label = self.enemy_dictionary[enemy]
+                enemy_label.hide()
                 del self.enemy_dictionary[enemy]
 
-            self.num_of_all_enemies -= 1
-            if self.num_of_all_enemies > 0:
-                self.addEnemy()
-            # else:
-            # prelazak u sledeci level
+                self.num_of_all_enemies -= 1
+                if self.num_of_all_enemies > 0:
+                    self.addEnemy()
+                # else:
+                # prelazak u sledeci level
+            else:
+                print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
+
         self.update()
     #endregion
 

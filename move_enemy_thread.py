@@ -2,7 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QTransform
 import time
 from enemy_tank import EnemyTank
-from enums import ElementType, Orientation
+from enums import ElementType, Orientation, BulletType
 from helper import Helper
 from bullet import Bullet
 
@@ -18,14 +18,14 @@ class MoveEnemyThread(QThread):
         self.parent_widget = parentQWidget
         self.was_canceled = False
         self.iterator = 0
-        self.current_enemy = None
+        self.chosen_enemy = None
 
     def run(self):
         while not self.was_canceled:
             self.parent_widget.mutex.lock()
             self.moveEnemy()
             self.iterator += 1
-            if self.iterator >= len(self.parent_widget.enemies_new_position):
+            if self.iterator >= len(self.parent_widget.enemy_dictionary):
                 self.iterator = 0
             self.parent_widget.mutex.unlock()
             time.sleep(0.25)
@@ -35,102 +35,133 @@ class MoveEnemyThread(QThread):
         
 
     def moveEnemy(self):
-        movedEnemies = []
-        rotatedEnemies = []
-        diedEnemies = []
-        diedBullets = []
+        enemies_with_new_position = []
+        enemies_with_new_orientation = []
+        enemies_to_be_removed = []
+        bullets_to_be_removed = []
+
         for enemy in self.parent_widget.enemy_dictionary:
-            if enemy.direction == Orientation.UP:
-                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y-1, ElementType.ENEMY):
-                    self.parent_widget.setShapeAt(enemy.x, enemy.x, ElementType.NONE)
-                    enemy.y -= 1
-                    self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
-                    movedEnemies.append(enemy)
-                else:
-                    if self.parent_widget.getShapeType(enemy.x, enemy.y - 1) == ElementType.BULLET:
-                        self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
-                        diedEnemies.append(enemy)
-                        bullet_to_die = self.parent_widget.findBulletAt(enemy.x, enemy.y - 1)
-                        self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
-                        diedBullets.append(bullet_to_die)
-                    else:
-                        rotatedEnemies.append((enemy, Orientation.RIGHT))
+            new_x = enemy.x
+            new_y = enemy.y
 
-            elif enemy.direction == Orientation.RIGHT:
-                if not Helper.isCollision(self.parent_widget, enemy.x+1, enemy.y, ElementType.ENEMY):
-                    self.parent_widget.setShapeAt(enemy.x, enemy.x, ElementType.NONE)
-                    enemy.x += 1
-                    self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
-                else:
-                    if self.parent_widget.getShapeType(enemy.x + 1, enemy.y) == ElementType.BULLET:
-                        self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
-                        diedEnemies.append(enemy)
-                        bullet_to_die = self.parent_widget.findBulletAt(enemy.x + 1, enemy.y)
-                        self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
-                        diedBullets.append(bullet_to_die)
-                    else:
-                        rotatedEnemies.append((enemy,Orientation.DOWN))
+            if enemy.direction is Orientation.UP:
+                new_y -= 1
+                new_orientation = Orientation.RIGHT
+            elif enemy.direction is Orientation.RIGHT:
+                new_x += 1
+                new_orientation = Orientation.DOWN
+            elif enemy.direction is Orientation.DOWN:
+                new_y += 1
+                new_orientation = Orientation.LEFT
+            elif enemy.direction is Orientation.LEFT:
+                new_x -= 1
+                new_orientation = Orientation.UP
 
-            elif enemy.direction == Orientation.DOWN:
-                if not Helper.isCollision(self.parent_widget, enemy.x, enemy.y+1, ElementType.ENEMY):
-                    self.parent_widget.setShapeAt(enemy.x, enemy.x, ElementType.NONE)
-                    enemy.y += 1
-                    self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
-                    movedEnemies.append(enemy)
-                else:
-                    if self.parent_widget.getShapeType(enemy.x, enemy.y + 1) == ElementType.BULLET:
-                        self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
-                        diedEnemies.append(enemy)
-                        bullet_to_die = self.parent_widget.findBulletAt(enemy.x, enemy.y + 1)
-                        self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
-                        diedBullets.append(bullet_to_die)
-                    else:
-                        rotatedEnemies.append((enemy, Orientation.LEFT))
+            if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.ENEMY):
+                is_bullet_collision = False
+                board_width = self.parent_widget.BoardWidth
+                board_height = self.parent_widget.BoardHeight
 
+                if 0 <= new_x <= board_width - 1 and 0 <= new_y <= board_height - 1:
+                    next_shape = self.parent_widget.getShapeType(new_x, new_y)
+
+                    if next_shape == ElementType.BULLET:
+                        is_bullet_collision = True
+                        self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
+                        enemies_to_be_removed.append(enemy)
+                        bullet_to_die = self.parent_widget.findBulletAt(new_x, new_y)
+                        if bullet_to_die is not None:
+                            self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
+                            bullets_to_be_removed.append(bullet_to_die)
+                        else:
+                            print("moveEnemy(): bullet_to_die is None")
+
+                if not is_bullet_collision:
+                    transform = QTransform()
+                    transform.rotate(Helper.rotationFunction(enemy.direction, new_orientation))
+                    enemy.direction = new_orientation
+                    enemies_with_new_orientation.append((enemy, transform))
             else:
-                if not Helper.isCollision(self.parent_widget, enemy.x-1, enemy.y, ElementType.ENEMY):
-                    self.parent_widget.setShapeAt(enemy.x, enemy.x, ElementType.NONE)
-                    enemy.x -= 1
-                    self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
-                    movedEnemies.append(enemy)
+                self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
+                enemy.x = new_x
+                enemy.y = new_y
+                self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
+                enemies_with_new_position.append(enemy)
+
+        self.enemy_move_signal.emit(enemies_with_new_position,
+                                    enemies_with_new_orientation,
+                                    enemies_to_be_removed,
+                                    bullets_to_be_removed)
+
+
+        self.chosen_enemy = self.chooseRandomEnemy()
+        if self.chosen_enemy is not None:
+            if self.chosen_enemy.fireBullet():
+                if Helper.isCollision(self.parent_widget,
+                                      self.chosen_enemy.active_bullet.x,
+                                      self.chosen_enemy.active_bullet.y,
+                                      ElementType.BULLET):
+                    self.bulletImpactOnFire(self.chosen_enemy.active_bullet.x,
+                                       self.chosen_enemy.active_bullet.y,
+                                       self.chosen_enemy.active_bullet,
+                                       bullets_to_be_removed,
+                                       [])
                 else:
-                    if self.parent_widget.getShapeType(enemy.x - 1, enemy.y) == ElementType.BULLET:
-                        self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
-                        diedEnemies.append(enemy)
-                        bullet_to_die = self.parent_widget.findBulletAt(enemy.x - 1, enemy.y)
-                        self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
-                        diedBullets.append(bullet_to_die)
-                    else:
-                        rotatedEnemies.append((enemy, Orientation.UP))
+                    self.bulletFired()
 
-        self.thread_signal.emit(movedEnemies, rotatedEnemies, diedEnemies, diedBullets)
+    def bulletFired(self):
+        bullet = self.chosen_enemy.active_bullet
 
-        if self.iterator >= len(self.parent_widget.enemies_new_position):
-            self.iterator = 0
-
-        #try:
-        current_enemy = self.parent_widget.enemies_new_position[self.iterator]
-        if current_enemy.fireBullet():
-            if Helper.isCollision(self.parent_widget,
-                                  current_enemy.active_bullet.x,
-                                  current_enemy.active_bullet.y,
-                                  ElementType.BULLET):
-                print("bullet impact on fire")
-                #self.bullet_impact_signal.emit(current_enemy.active_bullet.x,
-                                              # current_enemy.active_bullet.y,
-                                              # current_enemy.active_bullet)
-
-            else:
-                self.bulletFired(current_enemy.active_bullet)
-        #except IndexError:
-        #   print("moveEnemy(): IndexError")
-
-        self.thread_signal.emit()
-
-    def bulletFired(self, bullet):
         transform = QTransform()
         transform.rotate(Helper.rotationFunction(Orientation.UP, bullet.orientation))
 
         self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
 
         self.bullet_fired_signal.emit(bullet, transform)
+
+    def bulletImpactOnFire(self, new_x, new_y, bullet, bullets_to_be_removed, enemies_to_be_removed):
+        if not (0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):
+            bullet.bullet_owner.active_bullet = None
+            return
+
+        next_shape = self.parent_widget.getShapeType(new_x, new_y)
+
+        if next_shape is ElementType.WALL:
+            self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
+
+        elif next_shape is ElementType.BULLET:
+            other_bullet = self.parent_widget.findBulletAt(new_x, new_y)
+            if other_bullet is not None:
+                self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
+                bullets_to_be_removed.append(other_bullet)
+            else:
+                print("bulletImpactOnFire(): other_bullet is None")
+
+        elif (next_shape is ElementType.PLAYER1 or next_shape is ElementType.PLAYER2) and bullet.type is BulletType.ENEMY:
+            if next_shape is ElementType.PLAYER1:
+                gb_player = self.parent_widget.player_1
+            elif next_shape is ElementType.PLAYER2:
+                gb_player = self.parent_widget.player_1
+
+            if gb_player.lives > 0:
+                self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
+                gb_player.lives -= 1
+            else:
+                print(f"game over for {next_shape}")
+    
+        bullet.bullet_owner.active_bullet = None
+        self.bullet_impact_signal.emit([], bullets_to_be_removed, enemies_to_be_removed)
+
+    def chooseRandomEnemy(self):
+        if self.iterator >= len(self.parent_widget.enemy_dictionary):
+            self.iterator = 0
+
+        i = 0
+        chosen_enemy = None
+        for enemy in self.parent_widget.enemy_dictionary:
+            if i == self.iterator:
+                chosen_enemy = enemy
+                break
+            i += 1
+
+        return  chosen_enemy

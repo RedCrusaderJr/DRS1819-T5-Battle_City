@@ -17,7 +17,7 @@ class EnemyTank:
         self.y = y
 
     def fireBullet(self):
-        isBulletFired = False
+        is_bullet_fired = False
 
         if self.active_bullet is None:
             bullet_x = self.x
@@ -26,21 +26,21 @@ class EnemyTank:
             if self.direction is Orientation.UP:
                 bullet_x = self.x
                 bullet_y = self.y - 1
-                isBulletFired = True
+                is_bullet_fired = True
             elif self.direction is Orientation.RIGHT:
                 bullet_x = self.x + 1
                 bullet_y = self.y
-                isBulletFired = True
+                is_bullet_fired = True
             elif self.direction is Orientation.DOWN:
                 bullet_x = self.x
                 bullet_y = self.y + 1
-                isBulletFired = True
+                is_bullet_fired = True
             elif self.direction is Orientation.LEFT:
                 bullet_x = self.x - 1
                 bullet_y = self.y
-                isBulletFired = True
+                is_bullet_fired = True
 
             self.active_bullet = Bullet(BulletType.ENEMY, bullet_x, bullet_y, self.direction, self)
-            print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
+            #print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
 
-        return isBulletFired
+        return is_bullet_fired
