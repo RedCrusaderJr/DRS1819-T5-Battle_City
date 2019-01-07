@@ -74,6 +74,8 @@ class MovePlayerThread(QThread):
                         else:
                             self.bulletFired()
 
+
+
             elif self.tank.player_type == PlayerType.PLAYER_2:
                 if key == Qt.Key_W:
                     new_y -= 1
@@ -106,6 +108,8 @@ class MovePlayerThread(QThread):
                         else:
                             self.bulletFired()
 
+
+
             if changed:
                 if self.tank.player_type is PlayerType.PLAYER_1:
                     element_type = ElementType.PLAYER1
@@ -118,7 +122,9 @@ class MovePlayerThread(QThread):
 
                 self.playerMoved(new_x, new_y, new_orientation)
 
+            self.parent_widget.mutex.unlock()
             time.sleep(0.05)
+            self.parent_widget.mutex.lock()
 
     def playerMoved(self, new_x, new_y, new_orientation):
         if self.tank.player_type == PlayerType.PLAYER_1:
@@ -167,7 +173,7 @@ class MovePlayerThread(QThread):
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
                 bullets_to_be_removed.append(other_bullet)
             else:
-                print("bulletImpactOnFire(): other_bullet is None")
+                print("Move player thread: bulletImpactOnFire(): other_bullet is None")
 
         elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)

@@ -135,7 +135,7 @@ class MoveEnemyThread(QThread):
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
                 bullets_to_be_removed.append(other_bullet)
             else:
-                print("bulletImpactOnFire(): other_bullet is None")
+                print("Move enemy thread: bulletImpactOnFire(): other_bullet is None")
 
         elif (next_shape is ElementType.PLAYER1 or next_shape is ElementType.PLAYER2) and bullet.type is BulletType.ENEMY:
             if next_shape is ElementType.PLAYER1:

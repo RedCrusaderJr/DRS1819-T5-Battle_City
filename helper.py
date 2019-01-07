@@ -23,6 +23,6 @@ class Helper:
             elif element_type is ElementType.BULLET:
                 if next_position_shape is ElementType.NONE:
                     is_collision = False
-                    print(f"Collision: bullet with {element_type}")
+                    #print(f"Collision: bullet with {element_type}")
 
         return is_collision

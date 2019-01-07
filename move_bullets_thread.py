@@ -72,9 +72,11 @@ class MoveBulletsThread(QThread):
 
         elif next_shape is ElementType.BULLET:
             other_bullet = self.findBulletAt(new_x, new_y)
+            self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
             if other_bullet is not None:
-                self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
+                #self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
                 bullets_to_be_removed.append(other_bullet)
+                print("find other bullet!")
             else:
                 print("bulletImpact(): other_bullet is None")
 

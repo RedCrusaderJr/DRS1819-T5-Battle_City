@@ -278,13 +278,14 @@ class GameBoard(QFrame):
         return self.contentsRect().height() // GameBoard.BoardHeight
 
     def findBulletAt(self, x, y):
-        for bullet in self.bullets_new_posiotion:
+        for bullet in self.bullet_dictionary:
             if bullet.x == x and bullet.y == y:
                 return bullet
     #endregion
 
     #region CALLBACKS
     def enemyCallback(self, enemies_with_new_position, enemies_with_new_orientation, enemies_to_be_removed, bullets_to_be_removed):
+
         for enemy in enemies_with_new_position:
             if enemy in self.enemy_dictionary:
                 enemy_label = self.enemy_dictionary[enemy]
@@ -300,7 +301,7 @@ class GameBoard(QFrame):
                 enemy_label.setPixmap(pix.transformed(transform))
             else:
                 print(f"enemy({enemy}) from enemies_with_new_orientation is not in enemy_dictionary")
-
+        self.mutex.lock()
         for enemy in enemies_to_be_removed:
             if enemy in self.enemy_dictionary:
                 enemy_label = self.enemy_dictionary[enemy]
@@ -316,13 +317,14 @@ class GameBoard(QFrame):
                 print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
 
         for bullet in bullets_to_be_removed:
+            bullet.bullet_owner.active_bullet = None
             if bullet in self.bullet_dictionary:
                 bullet_label = self.bullet_dictionary[bullet]
                 bullet_label.hide()
                 del self.bullet_dictionary[bullet]
             else:
                 print(f"bullet({bullet}) from bullets_to_be_removed is not in bullet_dictionary")
-
+        self.mutex.unlock()
         self.update()
         
     def playerMoved(self, tank, transform):
@@ -339,9 +341,11 @@ class GameBoard(QFrame):
 
         self.setGameBoardLabelGeometry(gb_player_label, gb_player.x, gb_player.y)
 
-    def bulletFired(self, bullet, transform):    
+    def bulletFired(self, bullet, transform):
+        self.mutex.lock()
         self.bullet_dictionary[bullet] = QLabel(self)
         bullet_label = self.bullet_dictionary[bullet]
+        self.mutex.unlock()
 
         bullet.pm_flying = bullet.pm_flying.scaled(self.getSquareWidth(), self.getSquareHeight())
         bullet_label.setPixmap(bullet.pm_flying.transformed(transform))
@@ -351,6 +355,7 @@ class GameBoard(QFrame):
         bullet_label.show()
 
     def bulletMoved(self, bullets_with_new_posiotion, bullets_to_be_removed, enemies_to_be_removed):
+
         for bullet in bullets_with_new_posiotion:
             if bullet in self.bullet_dictionary:
                 bullet_label = self.bullet_dictionary[bullet]
@@ -362,6 +367,7 @@ class GameBoard(QFrame):
                     #pix = self.bullet_dictionary[bullet].pixmap()
                     #self.bullet_dictionary[bullet].setPixmap(pix)
 
+        self.mutex.lock()
         for bullet in bullets_to_be_removed:
             bullet.bullet_owner.active_bullet = None
             if bullet in self.bullet_dictionary:
@@ -384,7 +390,7 @@ class GameBoard(QFrame):
                 # prelazak u sledeci level
             else:
                 print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
-
+        self.mutex.unlock()
         self.update()
     #endregion
 
