@@ -85,18 +85,18 @@ class GameBoard(QFrame):
         #self.player_1_label.hide()
         #self.player_2_label.hide()
 
-        self.player_1.reset()
-        pixmap_1 = self.player_1.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
-        self.setPlayerToStartingPosition(self.player_1.x, self.player_1.y, self.player_1)
+        if self.player_1.lives > 0:
+            self.player_1.reset()
+            pixmap_1 = self.player_1.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+            self.setPlayerToStartingPosition(self.player_1.x, self.player_1.y, self.player_1)
 
-        self.player_1_label.setPixmap(pixmap_1)
-        self.setGameBoardLabelGeometry(self.player_1_label, self.player_1.x, self.player_1.y)
-        self.player_1_label.orientation = Orientation.UP
-        self.setShapeAt(self.player_1.x, self.player_1.y, ElementType.PLAYER1)
-        self.player_1_label.show()
+            self.player_1_label.setPixmap(pixmap_1)
+            self.setGameBoardLabelGeometry(self.player_1_label, self.player_1.x, self.player_1.y)
+            self.player_1_label.orientation = Orientation.UP
+            self.setShapeAt(self.player_1.x, self.player_1.y, ElementType.PLAYER1)
+            self.player_1_label.show()
 
-
-        if self.mode == 2:
+        if self.mode == 2 and self.player_2.lives > 0:
             self.player_2.reset()
             pixmap_2 = self.player_2.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
             self.setPlayerToStartingPosition(self.player_2.x, self.player_2.y, self.player_2)
@@ -177,8 +177,11 @@ class GameBoard(QFrame):
         """ Load specified level
         @return boolean Whether level was loaded
         """
-        filename = "levels/"+str(level_nr)+".txt"
-        # filename = "levels/game_over.txt"
+        if level_nr == 0:
+            filename = "levels/game_over.txt"
+        else:
+            filename = "levels/"+str(level_nr)+".txt"
+
         if not os.path.isfile(filename):
             return False
         #level = []
@@ -196,11 +199,11 @@ class GameBoard(QFrame):
                    # print(f"{x} {y}")
                 elif ch == "$":
                     self.setShapeAt(x, y, ElementType.BASE)
-                elif ch == "1":
+                elif ch == "1" and self.player_1.lives > 0:
                     self.player_1.setCoordinates(x, y)
                     self.player_1_starting_position = (x, y)
                     print("Namestio tuple")
-                elif ch == "2" and self.mode == 2:
+                elif ch == "2" and self.mode == 2 and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
                 x += 1

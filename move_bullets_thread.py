@@ -101,14 +101,14 @@ class MoveBulletsThread(QThread):
                 if next_shape is ElementType.PLAYER1:
                     self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
                     self.dead_player_signal.emit(1)
-                    # if self.parent_widget.mode == 1:
-                        
+                    if self.parent_widget.mode == 1 or self.parent_widget.player_2.lives <= 0:
+                        self.gameOver()
+
                 elif next_shape is ElementType.PLAYER2:
                     self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
                     self.dead_player_signal.emit(2)
-                
-                
-                
+                    if self.parent_widget.player_1.lives <= 0:
+                        self.gameOver()
 
         elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
@@ -121,9 +121,21 @@ class MoveBulletsThread(QThread):
 
         elif next_shape is ElementType.BASE:
             print("game over")
+            self.gameOver()
 
         self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
         bullets_to_be_removed.append(bullet)
+
+    def gameOver(self):
+        self.parent_widget.clearBoard()
+        self.parent_widget.move_enemy_thread.cancel()
+        # self.parent_widget.move_bullets_thread.cancel()
+        self.parent_widget.player_1.lives = 0
+        if self.parent_widget.mode == 2:
+            self.parent_widget.player_2.lives = 0
+        for enemy in self.parent_widget.enemy_dictionary:
+            self.parent_widget.enemy_dictionary[enemy].hide()
+        self.parent_widget.loadLevel(0)
 
     def findBulletAt(self, x, y):
         for bullet in self.parent_widget.bullet_dictionary:

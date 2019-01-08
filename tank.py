@@ -66,6 +66,5 @@ class Tank:
         if self.player_type == PlayerType.PLAYER_2:
             self.pix_map = QPixmap('./images/tank2.png')
 
-        self.lives = 3
         self.orientation = Orientation.UP
         self.active_bullet = None
