@@ -2,12 +2,13 @@ from PyQt5.QtCore import QThread, Qt, pyqtSignal
 import game_board as gb
 import time
 from bullet import Bullet
-from enums import Orientation, ElementType, BulletType
+from enums import Orientation, ElementType, BulletType, PlayerType
 from helper import Helper
 
 
 class MoveBulletsThread(QThread):
     bullets_move_signal = pyqtSignal(list, list, list)
+    dead_player_signal = pyqtSignal(int)
     #bullet_impact_signal = pyqtSignal(int, int, Bullet)
 
     def __init__(self, parentQWidget = None):
@@ -84,16 +85,33 @@ class MoveBulletsThread(QThread):
             if next_shape is ElementType.PLAYER1:
                 gb_player = self.parent_widget.player_1
             elif next_shape is ElementType.PLAYER2:
-                gb_player = self.parent_widget.player_1
+                gb_player = self.parent_widget.player_2
 
+            gb_player.lives -= 1
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
-                gb_player.lives -= 1
+                if gb_player.player_type == PlayerType.PLAYER_1:
+                    self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
+                elif gb_player.player_type == PlayerType.PLAYER_2:
+                    self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
             else:
                 print(f"game over for {next_shape}")
+                self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
+                if next_shape is ElementType.PLAYER1:
+                    self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
+                    self.dead_player_signal.emit(1)
+                    # if self.parent_widget.mode == 1:
+                        
+                elif next_shape is ElementType.PLAYER2:
+                    self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
+                    self.dead_player_signal.emit(2)
+                
+                
+                
 
         elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
+            
 
             for enemy in self.parent_widget.enemy_dictionary:
                 if new_x == enemy.x and new_y == enemy.y:
