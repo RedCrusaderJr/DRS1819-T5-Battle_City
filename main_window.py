@@ -5,19 +5,19 @@ from stat_frame import StatFrame
 import sys
 
 
-class FormWidget(QWidget):
+class MainWindowWidget(QWidget):
 
-    def __init__(self, parent):
-        super(FormWidget, self).__init__(parent)
+    def __init__(self, parent, mode):
+        super(MainWindowWidget, self).__init__(parent)
         self.layout = QHBoxLayout(self)
 
-        self.game_board_frame = GameBoard(self)
+        self.game_board_frame = GameBoard(self, mode)
         self.game_board_frame.setMinimumSize(1000, 562.5)
         self.game_board_frame.setMaximumSize(1000, 562.5)
         self.game_board_frame.setObjectName("game_board_frame")
         self.layout.addWidget(self.game_board_frame)
 
-        self.stat_frame = StatFrame(self)
+        self.stat_frame = StatFrame(self, self.game_board_frame)
         self.stat_frame.setMaximumHeight(562.5)
         self.stat_frame.setObjectName("stat_frame")
         self.layout.addWidget(self.stat_frame)
@@ -54,34 +54,41 @@ class BattleCity(QMainWindow):
         mode_menu.addAction(single_act)
         mode_menu.addAction(multi_act)
 
-        start_act = QAction('Start game', self)
-        start_act.triggered.connect(self.startGame)
+        # start_act = QAction('Start game', self)
+        # start_act.triggered.connect(self.startGame)
 
         settings_menu.addMenu(mode_menu)
-        settings_menu.addAction(start_act)
+        # settings_menu.addAction(start_act)
 
-        self.show()
-
-    def startGame(self):
-        self.form_widget = FormWidget(self)
-        self.setCentralWidget(self.form_widget)
-
-        #self.setCentralWidget(self.game_board)
-        self.setStyleSheet("""
-                QFrame#game_board_frame{
-                    background-color: rgb(0, 0, 0);
-                    }
-                QFrame#stat_frame{
-                    background-color: rgb(255, 0, 0);
-                    }
-        """)
         self.show()
 
     def toggleSingle(self, mode):
         self.status_bar.showMessage("MODE: SINGLE PLAYER")
+        self.form_widget = MainWindowWidget(self, 1)
+        self.setCentralWidget(self.form_widget)
+        self.setStyleSheet("""
+                        QFrame#game_board_frame{
+                            background-color: rgb(0, 0, 0);
+                            }
+                        QFrame#stat_frame{
+                            background-color: rgb(255, 0, 0);
+                            }
+                """)
+        self.show()
 
     def toggleMulti(self, mode):
         self.status_bar.showMessage("MODE: MULTIPLAYER")
+        self.form_widget = MainWindowWidget(self, 2)
+        self.setCentralWidget(self.form_widget)
+        self.setStyleSheet("""
+                                QFrame#game_board_frame{
+                                    background-color: rgb(0, 0, 0);
+                                    }
+                                QFrame#stat_frame{
+                                    background-color: rgb(255, 0, 0);
+                                    }
+                        """)
+        self.show()
 
     def onResize(self):
         print()
