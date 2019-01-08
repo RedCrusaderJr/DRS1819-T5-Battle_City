@@ -22,6 +22,7 @@ class MovePlayerThread(QThread):
         self.tank = tank
 
     def run(self):
+        #self.was_canceled = False
         while not self.was_canceled:
             self.parent_widget.mutex.lock()
             self.playerControlls()

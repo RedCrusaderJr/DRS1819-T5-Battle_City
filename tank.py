@@ -13,8 +13,8 @@ class Tank:
             self.pix_map = QPixmap('./images/tank2.png')
 
         self.lives = 3
-        self.x = 6
-        self.y = 6
+        self.x = 0
+        self.y = 0
         self.player_type = player_type
         self.orientation = Orientation.UP
         self.active_bullet = None
@@ -57,3 +57,14 @@ class Tank:
             #print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
         
         return is_bullet_fired
+
+    def reset(self):
+        if self.player_type == PlayerType.PLAYER_1:
+            self.pix_map = QPixmap('./images/tank1.png')
+
+        if self.player_type == PlayerType.PLAYER_2:
+            self.pix_map = QPixmap('./images/tank2.png')
+
+        self.lives = 3
+        self.orientation = Orientation.UP
+        self.active_bullet = None

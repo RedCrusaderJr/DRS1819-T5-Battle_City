@@ -29,7 +29,9 @@ class GameBoard(QFrame):
         self.initGameBoard()
 
     def initGameBoard(self):
-        self.num_of_all_enemies = 10
+        self.num_of_all_enemies = 5
+        self.num_of_enemies_per_level = 4
+        self.current_level = 1
 
         self.player_1 = Tank(PlayerType.PLAYER_1)
         self.player_1_label = QLabel(self)
@@ -39,11 +41,11 @@ class GameBoard(QFrame):
         self.player_2_starting_position = ()
 
         self.random_values = []
-        self.random_values = sample(range(1, 32), 4)
+        self.random_values = sample(range(1, 32), self.num_of_enemies_per_level)
 
         self.bullet_dictionary = {}
         self.enemy_dictionary = {}
-        for i in range(4):
+        for i in range(self.num_of_enemies_per_level):
             self.enemy_dictionary[EnemyTank(self.random_values[i])] = QLabel(self)
 
         self.board = []
@@ -69,22 +71,35 @@ class GameBoard(QFrame):
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
 
-    #region EVENTS
-    def showEvent(self, *args, **kwargs):
+    def initPlayers(self):
+        #self.player_1_label.hide()
+        #self.player_2_label.hide()
 
-        pixmap1 = self.player_1.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
-        pixmap2 = self.player_2.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+        self.player_1.reset()
+        self.player_2.reset()
 
 
-        self.player_1_label.setPixmap(pixmap1)
+        pixmap_1 = self.player_1.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+        pixmap_2 = self.player_2.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+
+        self.setPlayerToStartingPosition(self.player_1.x, self.player_1.y, self.player_1)
+        self.setPlayerToStartingPosition(self.player_2.x, self.player_2.y, self.player_2)
+
+        self.player_1_label.setPixmap(pixmap_1)
         self.setGameBoardLabelGeometry(self.player_1_label, self.player_1.x, self.player_1.y)
         self.player_1_label.orientation = Orientation.UP
         self.setShapeAt(self.player_1.x, self.player_1.y, ElementType.PLAYER1)
+        self.player_1_label.show()
 
-        self.player_2_label.setPixmap(pixmap2)
+        self.player_2_label.setPixmap(pixmap_2)
         self.setGameBoardLabelGeometry(self.player_2_label, self.player_2.x, self.player_2.y)
         self.player_2_label.orientation = Orientation.UP
         self.setShapeAt(self.player_2.x, self.player_2.y, ElementType.PLAYER2)
+        self.player_2_label.show()
+
+    #region EVENTS
+    def showEvent(self, *args, **kwargs):
+        self.initPlayers()
 
         for enemy in self.enemy_dictionary:
             pixmap3 = enemy.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
@@ -95,7 +110,7 @@ class GameBoard(QFrame):
         self.move_player_1_thread.start()
         self.move_player_2_thread.start()
         self.move_enemy_thread.start()
-        time.sleep(0.001)
+        #time.sleep(0.001)
         self.move_bullets_thread.start()
 
     def paintEvent(self, QPaintEvent):
@@ -142,9 +157,10 @@ class GameBoard(QFrame):
         self.board[(y * GameBoard.BoardWidth) + x] = shape_type
 
     def setWalls(self):
-        self.loadLevel(6)
+        self.loadLevel(self.current_level)
 
     def loadLevel(self, level_nr=1):
+        self.clearBoard()
         """ Load specified level
         @return boolean Whether level was loaded
         """
@@ -166,13 +182,46 @@ class GameBoard(QFrame):
                 elif ch == "1":
                     self.player_1.setCoordinates(x, y)
                     self.player_1_starting_position = (x, y)
+                    self.player_1_label.show()
                 elif ch == "2":
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
+                    #self.player_1_label.show()
                 x += 1
             x = 0
             y += 1
         return True
+
+    def advanceToNextLevel(self):
+        #self.move_player_1_thread.cancel()
+        #self.move_player_2_thread.cancel()
+        #self.move_enemy_thread.cancel()
+        #self.move_bullets_thread.cancel()
+
+        if len(self.bullet_dictionary) > 0:
+            for bullet in self.bullet_dictionary:
+                self.bullet_dictionary[bullet].hide()
+            self.bullet_dictionary.clear()
+
+        if len(self.enemy_dictionary) > 0:
+            for enemy in self.enemy_dictionary:
+                self.enemy_dictionary[enemy].hide()
+            self.enemy_dictionary.clear()
+
+        for i in range(self.num_of_enemies_per_level):
+            self.enemy_dictionary[EnemyTank(self.random_values[i])] = QLabel(self)
+
+        for enemy in self.enemy_dictionary:
+            pixmap3 = enemy.pix_map.scaled(self.getSquareWidth(), self.getSquareHeight())
+            self.enemy_dictionary[enemy].setPixmap(pixmap3)
+            self.setGameBoardLabelGeometry(self.enemy_dictionary[enemy], enemy.x, enemy.y)
+            self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
+            self.enemy_dictionary[enemy].show()
+
+        self.num_of_all_enemies = 10
+        self.current_level += 1
+        self.initPlayers()
+        self.loadLevel(self.current_level)
 
     def setPlayerToStartingPosition(self, old_x, old_y, tank):
         if (tank.player_type == PlayerType.PLAYER_1):
@@ -253,18 +302,14 @@ class GameBoard(QFrame):
         self.setShapeAt(current_enemy.x, current_enemy.y, ElementType.ENEMY)
         enemy_label.show()
 
-    """
-    def removeBullet(self, bullet):
-        
-            index = self.bullets_new_posiotion.index(bullet)
-            self.bullets_new_posiotion.remove(bullet)
-            del self.bullets[index]
-    """
-
     def clearBoard(self):
+        if len(self.board) > 0:
+            self.board.clear()
+
         for i in range(GameBoard.BoardHeight):
             for j in range(GameBoard.BoardWidth):
                 self.board.append(ElementType.NONE)
+        self.update()
     #endregion
 
     #region GET_METHODS
@@ -309,10 +354,12 @@ class GameBoard(QFrame):
                 del self.enemy_dictionary[enemy]
 
                 self.num_of_all_enemies -= 1
+                print(f"enemyCallback(){self.num_of_all_enemies}")
                 if self.num_of_all_enemies > 0:
                     self.addEnemy()
-                # else:
-                # prelazak u sledeci level
+                elif self.num_of_all_enemies == -3:
+                    self.advanceToNextLevel()
+
             else:
                 print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
 
@@ -384,10 +431,12 @@ class GameBoard(QFrame):
                 del self.enemy_dictionary[enemy]
 
                 self.num_of_all_enemies -= 1
+                print(f"BulletMoved(){self.num_of_all_enemies}")
                 if self.num_of_all_enemies > 0:
                     self.addEnemy()
-                # else:
-                # prelazak u sledeci level
+                elif self.num_of_all_enemies == -3:
+                    #print(f"BulletMoved(){self.num_of_all_enemies}")
+                    self.advanceToNextLevel()
             else:
                 print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
         self.mutex.unlock()

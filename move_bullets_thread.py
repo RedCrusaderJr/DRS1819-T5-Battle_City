@@ -16,6 +16,7 @@ class MoveBulletsThread(QThread):
         self.was_canceled = False
 
     def run(self):
+        #self.was_canceled = False
         while not self.was_canceled:
             self.parent_widget.mutex.lock()
             self.moveBullets()
@@ -24,7 +25,7 @@ class MoveBulletsThread(QThread):
 
     def cancel(self):
         self.was_canceled = True
-        
+
     def moveBullets(self):
         bullets_with_new_position = []
         bullets_to_be_removed = []
@@ -84,7 +85,7 @@ class MoveBulletsThread(QThread):
             if next_shape is ElementType.PLAYER1:
                 gb_player = self.parent_widget.player_1
             elif next_shape is ElementType.PLAYER2:
-                gb_player = self.parent_widget.player_1
+                gb_player = self.parent_widget.player_2
 
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)

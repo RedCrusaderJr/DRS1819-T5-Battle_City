@@ -21,6 +21,7 @@ class MoveEnemyThread(QThread):
         self.chosen_enemy = None
 
     def run(self):
+        #self.was_canceled = False
         while not self.was_canceled:
             self.parent_widget.mutex.lock()
             self.moveEnemy()
@@ -32,7 +33,6 @@ class MoveEnemyThread(QThread):
 
     def cancel(self):
         self.was_canceled = True
-        
 
     def moveEnemy(self):
         enemies_with_new_position = []
@@ -141,7 +141,7 @@ class MoveEnemyThread(QThread):
             if next_shape is ElementType.PLAYER1:
                 gb_player = self.parent_widget.player_1
             elif next_shape is ElementType.PLAYER2:
-                gb_player = self.parent_widget.player_1
+                gb_player = self.parent_widget.player_2
 
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
