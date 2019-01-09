@@ -12,6 +12,9 @@ from helper import Helper
 from bullet import Bullet
 from random import sample, randint
 import time
+from multiprocessing import Process, Pipe
+from deux_ex_machina import DeuxExMachina
+from deux_ex_machina_thread import DeuxExMachinaThread
 
 class GameBoard(QFrame):
     #TODO: refactor ovo staviti negde
@@ -41,6 +44,9 @@ class GameBoard(QFrame):
         self.player_1 = Tank(PlayerType.PLAYER_1)
         self.player_1_label = QLabel(self)
         self.player_1_starting_position = ()
+
+        self.force_x = None
+        self.force_y = None
 
         if self.mode == 2:
             self.player_2 = Tank(PlayerType.PLAYER_2)
@@ -80,6 +86,14 @@ class GameBoard(QFrame):
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
         self.move_bullets_thread.dead_player_signal.connect(self.removeDeadPlayer)
+
+        self.ex_pipe, self.in_pipe = Pipe()
+        self.deux_ex_machina_process = DeuxExMachina(pipe=self.ex_pipe, boardWidth=GameBoard.BoardWidth, boardHeight=GameBoard.BoardHeight)
+
+
+        self.deux_ex_machina_thread = DeuxExMachinaThread(self)
+
+
 
     def initPlayers(self):
         #self.player_1_label.hide()
@@ -125,6 +139,8 @@ class GameBoard(QFrame):
             self.move_player_2_thread.start()
         self.move_enemy_thread.start()
         self.move_bullets_thread.start()
+        self.deux_ex_machina_process.start()
+        self.deux_ex_machina_thread.start()
 
     def paintEvent(self, QPaintEvent):
         painter = QPainter(self)
@@ -143,6 +159,16 @@ class GameBoard(QFrame):
                                     rect.left() + j * self.getSquareWidth(),
                                     board_top + i * self.getSquareHeight(),
                                     ElementType.BASE)
+                elif shape_type == ElementType.LIFE:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.LIFE)
+                elif shape_type == ElementType.FREEZE:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.FREEZE)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Up or  event.key() == Qt.Key_Down or  \
@@ -189,11 +215,8 @@ class GameBoard(QFrame):
         data = f.read().split("\n")
         #self.mapr = []
         x, y = 0, 0
-        cnt = 0
         for row in data:
             for ch in row:
-                print(cnt)
-                cnt += 1
                 if ch == "#":
                     self.setShapeAt(x, y, ElementType.WALL)
                    # print(f"{x} {y}")
@@ -202,7 +225,6 @@ class GameBoard(QFrame):
                 elif ch == "1" and self.player_1.lives > 0:
                     self.player_1.setCoordinates(x, y)
                     self.player_1_starting_position = (x, y)
-                    print("Namestio tuple")
                 elif ch == "2" and self.mode == 2 and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
@@ -237,6 +259,8 @@ class GameBoard(QFrame):
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
             self.enemy_dictionary[enemy].show()
 
+        self.force_y = None
+        self.force_x = None
         self.num_of_all_enemies = 10
         self.current_level += 1
         self.initPlayers()
@@ -472,6 +496,14 @@ class GameBoard(QFrame):
             painter.drawPixmap(x + 1, y + 1, pix1)
         elif type == ElementType.BASE:
             pix = QPixmap('./images/lightning.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.LIFE:
+            pix = QPixmap('./images/heart.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.FREEZE:
+            pix = QPixmap('./images/freeze.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
 

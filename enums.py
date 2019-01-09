@@ -12,7 +12,9 @@ class ElementType(IntEnum):
     ENEMY = 3,
     WALL = 4,
     BULLET = 5,
-    BASE = 6
+    BASE = 6,
+    LIFE = 7,
+    FREEZE = 8
 
 
 class WallType(IntEnum):
