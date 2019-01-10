@@ -20,10 +20,16 @@ class StatFrame(QFrame):
             self.player_2_lives = 3
 
         self.level_num_label = QLabel("Level number: " + str(self.level_num))
+        name_font = self.level_num_label.font()
+        name_font.setPointSize(20)
+        self.level_num_label.setFont(name_font)
         self.enemies_left_label = QLabel("Enemies left: " + str(self.enemies_left))
+        self.enemies_left_label.setFont(name_font)
         self.player_1_lives_label = QLabel("Player 1 lives: " + str(self.player_1_lives))
+        self.player_1_lives_label.setFont(name_font)
         if self.game_board.mode == 2:
             self.player_2_lives_label = QLabel("Player 2 lives: " + str(self.player_2_lives))
+            self.player_2_lives_label.setFont(name_font)
 
         self.layout.addWidget(self.level_num_label)
         self.layout.addWidget(self.enemies_left_label)

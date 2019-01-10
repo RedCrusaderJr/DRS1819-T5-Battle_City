@@ -20,4 +20,3 @@ class DeuxExMachina(Process):
 
             pipe.send((rand_width, rand_height, rand_force))
             print(f"Send: {rand_force}")
-

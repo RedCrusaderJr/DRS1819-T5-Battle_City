@@ -28,6 +28,7 @@ class GameBoard(QFrame):
     change_lives_signal = pyqtSignal(int, int)
     change_level_signal = pyqtSignal()
     change_enemies_left_signal = pyqtSignal(int)
+    restart_game_signal = pyqtSignal()
 
     # tile width/height in px
     TILE_SIZE = 16
