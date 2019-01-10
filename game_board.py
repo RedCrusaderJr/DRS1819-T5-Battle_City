@@ -642,7 +642,7 @@ class GameBoard(QFrame):
             gb_player = self.player_2
             gb_player_label = self.player_2_label
 
-        pix = gb_player_label.pixma3p()
+        pix = gb_player_label.pixmap()
         gb_player_label.setPixmap(pix.transformed(transform))
         gb_player_label.orientation = gb_player.orientation
 
