@@ -12,10 +12,34 @@ class MainWindowWidget(QWidget):
         self.layout = QHBoxLayout(self)
 
         self.game_board_frame = GameBoard(self, mode)
+        self.mode = mode
         self.game_board_frame.setMinimumSize(1000, 562.5)
         self.game_board_frame.setMaximumSize(1000, 562.5)
         self.game_board_frame.setObjectName("game_board_frame")
         self.layout.addWidget(self.game_board_frame)
+
+        self.game_board_frame.restart_game_signal.connect(self.restartGame)
+
+        self.stat_frame = StatFrame(self, self.game_board_frame)
+        self.stat_frame.setMaximumHeight(562.5)
+        self.stat_frame.setObjectName("stat_frame")
+        self.layout.addWidget(self.stat_frame)
+
+        self.game_board_frame.setFocus()
+
+        self.setLayout(self.layout)
+
+    def restartGame(self):
+        self.game_board_frame.hide()
+        self.stat_frame.hide()
+
+        self.game_board_frame = GameBoard(self, self.mode)
+        self.game_board_frame.setMinimumSize(1000, 562.5)
+        self.game_board_frame.setMaximumSize(1000, 562.5)
+        self.game_board_frame.setObjectName("game_board_frame")
+        self.layout.addWidget(self.game_board_frame)
+
+        self.game_board_frame.restart_game_signal.connect(self.restartGame)
 
         self.stat_frame = StatFrame(self, self.game_board_frame)
         self.stat_frame.setMaximumHeight(562.5)
@@ -98,7 +122,8 @@ class BattleCity(QMainWindow):
 
     def onResize(self):
         print()
-        
+
+
         
 if __name__ == "__main__":
     app = QApplication([])
