@@ -37,9 +37,10 @@ class GameBoard(QFrame):
         self.initGameBoard()
 
     def initGameBoard(self):
-        self.num_of_all_enemies = 5
+        self.num_of_all_enemies = 7
         self.num_of_enemies_per_level = 4
         self.current_level = 1
+        self.enemies_increaser = 0
 
         self.player_1 = Tank(PlayerType.PLAYER_1)
         self.player_1_label = QLabel(self)
@@ -225,9 +226,11 @@ class GameBoard(QFrame):
                 elif ch == "1" and self.player_1.lives > 0:
                     self.player_1.setCoordinates(x, y)
                     self.player_1_starting_position = (x, y)
+                    self.setShapeAt(x, y, ElementType.PLAYER1)
                 elif ch == "2" and self.mode == 2 and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
+                    self.setShapeAt(x, y, ElementType.PLAYER2)
                 x += 1
             x = 0
             y += 1
@@ -238,6 +241,7 @@ class GameBoard(QFrame):
         #self.move_player_2_thread.cancel()
         #self.move_enemy_thread.cancel()
         #self.move_bullets_thread.cancel()
+
 
         if len(self.bullet_dictionary) > 0:
             for bullet in self.bullet_dictionary:
@@ -259,12 +263,21 @@ class GameBoard(QFrame):
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
             self.enemy_dictionary[enemy].show()
 
+        if self.current_level >= 6:
+            self.current_level = 0
+
+        self.enemies_increaser += 1
+
         self.force_y = None
         self.force_x = None
-        self.num_of_all_enemies = 10
+        self.num_of_all_enemies = 7 + self.enemies_increaser
         self.current_level += 1
         self.initPlayers()
         self.loadLevel(self.current_level)
+        self.change_enemies_left_signal.emit(self.num_of_all_enemies)
+        self.change_level_signal.emit()
+        time.sleep(1)
+
 
     def setPlayerToStartingPosition(self, old_x, old_y, tank):
         if (tank.player_type == PlayerType.PLAYER_1):
@@ -427,7 +440,7 @@ class GameBoard(QFrame):
             gb_player = self.player_2
             gb_player_label = self.player_2_label
 
-        pix = gb_player_label.pixmap()
+        pix = gb_player_label.pixma3p()
         gb_player_label.setPixmap(pix.transformed(transform))
         gb_player_label.orientation = gb_player.orientation
 

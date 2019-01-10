@@ -22,6 +22,8 @@ class MainWindowWidget(QWidget):
         self.stat_frame.setObjectName("stat_frame")
         self.layout.addWidget(self.stat_frame)
 
+        self.game_board_frame.setFocus()
+
         self.setLayout(self.layout)
     
     def onResize(self):

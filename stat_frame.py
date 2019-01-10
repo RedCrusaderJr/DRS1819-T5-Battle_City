@@ -44,7 +44,7 @@ class StatFrame(QFrame):
 
     def changeLevel(self):
         self.level_num += 1
-        self.level_num_label.seText("Level number: " + str(self.level_num))
+        self.level_num_label.setText("Level number: " + str(self.level_num))
 
     def changeEnemiesLeft(self, num_of_enemies):
         self.enemies_left = num_of_enemies + 3
