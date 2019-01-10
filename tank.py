@@ -7,6 +7,7 @@ from bullet import Bullet
 class Tank:
 
     def __init__(self, player_type):
+        self.pix_map = None
         if player_type == PlayerType.PLAYER_1:
             self.pix_map = QPixmap('./images/tank1.png')
         elif player_type == PlayerType.PLAYER_2:
@@ -68,3 +69,15 @@ class Tank:
 
         self.orientation = Orientation.UP
         self.active_bullet = None
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["pix_map"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        if player_type == PlayerType.PLAYER_1:
+            self.pix_map = QPixmap('./images/tank1.png')
+        elif player_type == PlayerType.PLAYER_2:
+            self.pix_map = QPixmap('./images/tank2.png')

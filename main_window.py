@@ -81,7 +81,7 @@ class BattleCity(QMainWindow):
 
     def toggleOnlineClient(self, mode):
         self.status_bar.showMessage("MODE: ONLINE_CLIENT")
-        self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLINET)
+        self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
     def startNewGame(self, mode):
         self.form_widget = MainWindowWidget(self, mode)

@@ -1,5 +1,6 @@
 from enums import GameMode
 import pickle
+from PyQt5.QtCore import QThread, Qt, pyqtSignal
 from PyQt5.QtGui import QTransform
 from bullet import  Bullet
 from tank import Tank
@@ -11,7 +12,7 @@ class CommunicationThread(QThread):
     enemy_move_signal = pyqtSignal(list, list, list)
 
     def __init__(self, parentQWidget = None):
-        super(MoveEnemyThread, self).__init__(parentQWidget)
+        super(CommunicationThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
         self.socket = self.parent_widget.socket
         self.was_canceled = False

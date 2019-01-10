@@ -17,6 +17,7 @@ from deux_ex_machina import DeuxExMachina
 from deux_ex_machina_thread import DeuxExMachinaThread
 from communication import Communication
 import pickle
+from communication_thread import CommunicationThread
 
 class GameBoard(QFrame):
     #TODO: refactor ovo staviti negde
@@ -235,11 +236,10 @@ class GameBoard(QFrame):
         # region THREADS
         # TODO: thred za pozicije pl 1, bulleta, i svega ostalog....
         self.communnication_thread = CommunicationThread(self)
-        self.communnication_thread.player_1_move_signal.connect()
-        self.communnication_thread.player_2_move_signal.connect()
-        self.communnication_thread.bullet_fired_signal.connect()
-        self.communnication_thread.bullets_move_signal.connect()
-        self.communnication_thread.enemy_move_signal.connect()
+        #self.communnication_thread.player_move_signal.connect()
+        #self.communnication_thread.bullet_fired_signal.connect()
+        #self.communnication_thread.bullets_move_signal.connect()
+        #self.communnication_thread.enemy_move_signal.connect()
 
         self.move_player_2_thread = MovePlayerThread(self.commands_2, self.player_2, self)
         self.move_player_2_thread.player_moved_signal.connect(self.playerMoved)
@@ -249,16 +249,10 @@ class GameBoard(QFrame):
 
     def sendInitEnemiesToClient(self):
         enemy_list = list(self.enemy_dictionary.keys())
-        pix_dict = {}
-        for enemy in enemy_list:
-            pix_dict[enemy] = enemy.pix_map
-            enemy.pix_map = None
         data = pickle.dumps(("INIT_ENEMY", enemy_list))
-        for enemy in enemy_list:
-            enemy.pix_map = pix_dict[enemy]
             
         #with self.socket:
-        self.socket.sendall(data)
+        self.conn.sendall(data)
 
     def receiveOkFromClient(self):
         #with self.socket:
@@ -281,7 +275,7 @@ class GameBoard(QFrame):
            # with conn:
             text = ""
             while True:
-                bin = self.conn.recv(1024)
+                bin = self.socket.recv(1024)
                 if not bin or len(bin) < 1024:
                     break
 
@@ -291,7 +285,7 @@ class GameBoard(QFrame):
                 for i in range(data):
                     self.enemy_dictionary[EnemyTank(data[i])] = QLabel(self)
                 text = "OK"
-                self.conn.sendall(text.encode("utf8"))
+                self.socket.sendall(text.encode("utf8"))
     #endregion
 
 
@@ -307,13 +301,37 @@ class GameBoard(QFrame):
             self.setGameBoardLabelGeometry(self.enemy_dictionary[enemy], enemy.x, enemy.y)
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
 
-        self.move_player_1_thread.start()
-        if self.mode == 2:
+
+        if self.mode is GameMode.SINGLEPLAYER:
+            self.move_player_1_thread.start()
+            #self.move_player_2_thread.start()
+            self.move_enemy_thread.start()
+            self.move_bullets_thread.start()
+            self.deux_ex_machina_process.start()
+            self.deux_ex_machina_thread.start()
+
+        elif self.mode is GameMode.MULTIPLAYER_OFFLINE:
+            self.move_player_1_thread.start()
             self.move_player_2_thread.start()
-        self.move_enemy_thread.start()
-        self.move_bullets_thread.start()
-        self.deux_ex_machina_process.start()
-        self.deux_ex_machina_thread.start()
+            self.move_enemy_thread.start()
+            self.move_bullets_thread.start()
+            self.deux_ex_machina_process.start()
+            self.deux_ex_machina_thread.start()
+
+        elif self.mode is GameMode.MULTIPLAYER_ONLINE_HOST:
+            self.move_player_1_thread.start()
+            #self.move_player_2_thread.start()
+            self.move_enemy_thread.start()
+            self.move_bullets_thread.start()
+            self.deux_ex_machina_process.start()
+            self.deux_ex_machina_thread.start()
+
+        elif self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            #self.move_player_1_thread.start()
+            self.move_player_2_thread.start()
+            #self.move_bullets_thread.start()
+            #self.deux_ex_machina_process.start()
+            #self.deux_ex_machina_thread.start()
 
     def paintEvent(self, QPaintEvent):
         painter = QPainter(self)
@@ -344,23 +362,27 @@ class GameBoard(QFrame):
                                     ElementType.FREEZE)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or \
-                event.key() == Qt.Key_Left or \
-                event.key() == Qt.Key_Right or \
-                event.key() == Qt.Key_Space:
+        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or  \
+                                       event.key() == Qt.Key_Left or  \
+                                       event.key() == Qt.Key_Right or \
+                                       event.key() == Qt.Key_Space:
             self.commands_1.append(event.key())
         elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or \
-                event.key() == Qt.Key_A or \
-                event.key() == Qt.Key_D or \
-                event.key() == Qt.Key_F:
+                                        event.key() == Qt.Key_A or \
+                                        event.key() == Qt.Key_D or \
+                                        event.key() == Qt.Key_F:
             self.commands_2.append(event.key())
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or event.key() == Qt.Key_Left \
-                or event.key() == Qt.Key_Right or event.key() == Qt.Key_Space:
+        if event.key() == Qt.Key_Up or event.key() == Qt.Key_Down or  \
+                                       event.key() == Qt.Key_Left or  \
+                                       event.key() == Qt.Key_Right or \
+                                       event.key() == Qt.Key_Space:
             self.commands_1.remove(event.key())
-        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or event.key() == Qt.Key_A or event.key() == Qt.Key_D \
-                or event.key() == Qt.Key_F:
+        elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or \
+                                        event.key() == Qt.Key_A or \
+                                        event.key() == Qt.Key_D or \
+                                        event.key() == Qt.Key_F:
             self.commands_2.remove(event.key())
     # endregion
 
@@ -642,8 +664,9 @@ class GameBoard(QFrame):
             gb_player = self.player_2
             gb_player_label = self.player_2_label
 
-        pix = gb_player_label.pixma3p()
+        pix = gb_player_label.pixmap()
         gb_player_label.setPixmap(pix.transformed(transform))
+        #gb_player_label.setPixmap(gb_player.pix_map.transformed(transform))
         gb_player_label.orientation = gb_player.orientation
 
         self.setGameBoardLabelGeometry(gb_player_label, gb_player.x, gb_player.y)
@@ -735,5 +758,3 @@ class GameBoard(QFrame):
                           board_top + y * self.getSquareHeight(),
                           self.getSquareWidth(),
                           self.getSquareHeight())
-
-

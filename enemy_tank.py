@@ -44,3 +44,12 @@ class EnemyTank:
             #print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
 
         return is_bullet_fired
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["pix_map"]
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.pix_map = QPixmap('./images/enemy.png')
