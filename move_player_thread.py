@@ -5,6 +5,7 @@ from tank import Tank
 from enums import PlayerType, ElementType, Orientation, BulletType
 from helper import Helper
 from bullet import Bullet
+from threading import Timer
 
 
 class MovePlayerThread(QThread):
@@ -24,6 +25,7 @@ class MovePlayerThread(QThread):
         self.was_canceled = False
         self.commands = commands
         self.tank = tank
+        self.is_freezed = False
 
     def run(self):
         #self.was_canceled = False
@@ -47,7 +49,7 @@ class MovePlayerThread(QThread):
         new_orientation = self.tank.orientation
         for key in com:
             changed = False
-            if self.tank.player_type == PlayerType.PLAYER_1:
+            if self.tank.player_type == PlayerType.PLAYER_1 and self.is_freezed == False:
                 if key == Qt.Key_Up:
                     new_y -= 1
                     changed = True
@@ -78,7 +80,8 @@ class MovePlayerThread(QThread):
                                                     enemies_to_be_removed)
                         else:
                             self.bulletFired()
-            elif self.tank.player_type == PlayerType.PLAYER_2:
+
+            elif self.tank.player_type == PlayerType.PLAYER_2 and self.is_freezed == False:
                 if key == Qt.Key_W:
                     new_y -= 1
                     changed = True
@@ -117,9 +120,31 @@ class MovePlayerThread(QThread):
                     element_type = ElementType.PLAYER2
 
                 if Helper.isCollision(self.parent_widget, new_x, new_y, element_type):
-                    new_x = self.tank.x
-                    new_y = self.tank.y
+                    if not (new_x >= self.parent_widget.BoardWidth or new_x < 0 or new_y >= self.parent_widget.BoardHeight or new_y < 0):
+                        if self.parent_widget.getShapeType(new_x, new_y) == ElementType.FREEZE:
+                            # freezuj
+                            self.is_freezed = True
+                            self.parent_widget.setShapeAt(new_x, new_y, element_type)
+                            self.playerMoved(new_x, new_y, new_orientation)
+                            t = Timer(5, self.timeout)
+                            t.start()
+                            # wait for time completion
+                            # t.join()
+                        elif self.parent_widget.getShapeType(new_x, new_y) == ElementType.LIFE:
+                            if element_type == ElementType.PLAYER1:
+                                self.parent_widget.player_1.lives += 1
+                                self.parent_widget.change_lives_signal.emit(1, self.parent_widget.player_1.lives)
+                            elif element_type == ElementType.PLAYER2:
+                                self.parent_widget.player_2.lives += 1
+                                self.parent_widget.change_lives_signal.emit(2, self.parent_widget.player_2.lives)
+                        else:
+                            new_x = self.tank.x
+                            new_y = self.tank.y
+                    else:
+                        new_x = self.tank.x
+                        new_y = self.tank.y
 
+                    self.parent_widget.setShapeAt(new_x, new_y, element_type)
                 self.playerMoved(new_x, new_y, new_orientation)
 
             self.parent_widget.mutex.unlock()
@@ -214,3 +239,6 @@ class MovePlayerThread(QThread):
             with self.socket:
                 self.socket.sendall(data)
     # endregion
+
+    def timeout(self):
+        self.is_freezed = False

@@ -51,11 +51,12 @@ class GameBoard(QFrame):
 
     #region INIT_METHODS
     def initGameBoard(self):
-        self.num_of_all_enemies = 5
+        self.num_of_all_enemies = 7
         self.num_of_enemies_per_level = 4
         self.current_level = 1
         self.force_x = None
         self.force_y = None
+        self.enemies_increaser = 0
 
         if self.mode is GameMode.SINGLEPLAYER:
             self.initSingleplayer()
@@ -401,6 +402,7 @@ class GameBoard(QFrame):
                 elif ch == "2" and self.mode is not GameMode.SINGLEPLAYER and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
+                    self.setShapeAt(x, y, ElementType.PLAYER2)
                 x += 1
             x = 0
             y += 1
@@ -427,12 +429,21 @@ class GameBoard(QFrame):
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
             self.enemy_dictionary[enemy].show()
 
+        if self.current_level >= 6:
+            self.current_level = 0
+
+        self.enemies_increaser += 1
+
         self.force_y = None
         self.force_x = None
-        self.num_of_all_enemies = 10
+        self.num_of_all_enemies = 7 + self.enemies_increaser
         self.current_level += 1
         self.setPlayersForNextLevel()
         self.loadLevel(self.current_level)
+        self.change_enemies_left_signal.emit(self.num_of_all_enemies)
+        self.change_level_signal.emit()
+        time.sleep(1)
+
 
     def setPlayersForNextLevel(self):
         # self.player_1_label.hide()
@@ -631,7 +642,7 @@ class GameBoard(QFrame):
             gb_player = self.player_2
             gb_player_label = self.player_2_label
 
-        pix = gb_player_label.pixmap()
+        pix = gb_player_label.pixma3p()
         gb_player_label.setPixmap(pix.transformed(transform))
         gb_player_label.orientation = gb_player.orientation
 
