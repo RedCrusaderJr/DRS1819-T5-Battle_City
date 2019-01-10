@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QThread, Qt, pyqtSignal, QMutex
 from PyQt5.QtGui import QTransform
-import time
+import time, pickle
 from tank import Tank
 from enums import PlayerType, ElementType, Orientation, BulletType
 from helper import Helper
@@ -17,6 +17,10 @@ class MovePlayerThread(QThread):
     def __init__(self, commands, tank, parentQWidget = None):
         super(MovePlayerThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
+        if self.parent_widget.socket is not None:
+            self.socket = self.parent_widget.socket
+        else:
+            self.socket = None
         self.was_canceled = False
         self.commands = commands
         self.tank = tank
@@ -74,9 +78,6 @@ class MovePlayerThread(QThread):
                                                     enemies_to_be_removed)
                         else:
                             self.bulletFired()
-
-
-
             elif self.tank.player_type == PlayerType.PLAYER_2:
                 if key == Qt.Key_W:
                     new_y -= 1
@@ -108,8 +109,6 @@ class MovePlayerThread(QThread):
                                                     enemies_to_be_removed)
                         else:
                             self.bulletFired()
-
-
 
             if changed:
                 if self.tank.player_type is PlayerType.PLAYER_1:
@@ -144,9 +143,9 @@ class MovePlayerThread(QThread):
         transform = QTransform()
         transform.rotate(Helper.rotationFunction(gb_player.orientation, new_orientation))
         gb_player.orientation = new_orientation
+
         self.parent_widget.setShapeAt(gb_player.x, gb_player.y, element_type)
-        
-        self.player_moved_signal.emit(self.tank, transform)
+        self.playerMoveSignal(transform)
 
     def bulletFired(self):
         bullet = self.tank.active_bullet
@@ -155,8 +154,7 @@ class MovePlayerThread(QThread):
         transform.rotate(Helper.rotationFunction(Orientation.UP, bullet.orientation))
 
         self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
-
-        self.bullet_fired_signal.emit(bullet, transform)
+        self.bulletFiredSignal(bullet, transform)
 
     def bulletImpactOnFire(self, new_x, new_y, bullet, bullets_to_be_removed, enemies_to_be_removed):
         if not (0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):
@@ -186,6 +184,33 @@ class MovePlayerThread(QThread):
 
         elif next_shape is ElementType.BASE:
             print("game over")
-
         bullet.bullet_owner.active_bullet = None
+
+        self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
+
+
+    # region SIGNAL_EMITS
+    def playerMoveSignal(self, transform):
+        self.player_moved_signal.emit(self.tank, transform)
+        # TODO: SEND PLAYER_MOVED
+        if self.parent_widget.socket is not None:
+            data = pickle.dumps(("PLAYER_MOVED", (self.tank, transform)))
+            with self.socket:
+                self.socket.sendall(data)
+
+    def bulletFiredSignal(self, bullet, transform):
+        self.bullet_fired_signal.emit(bullet, transform)
+        # TODO: SEND BULLET_FIRED
+        if self.parent_widget.socket is not None:
+            data = pickle.dumps(("BULLET_FIRED", (bullet, transform)))
+            with self.socket:
+                self.socket.sendall(data)
+
+    def bulletImpactSignal(self, bullets_to_be_removed, enemies_to_be_removed):
         self.bullet_impact_signal.emit([], bullets_to_be_removed, enemies_to_be_removed)
+        # TODO: SEND BULLET_IMPACT
+        if self.parent_widget.socket is not None:
+            data = pickle.dumps(("BULLET_IMPACT", ([], bullets_to_be_removed, enemies_to_be_removed)))
+            with self.socket:
+                self.socket.sendall(data)
+    # endregion

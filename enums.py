@@ -1,5 +1,7 @@
 from enum import IntEnum
 
+#TODO: refaktorisati
+
 class PlayerType(IntEnum):
     PLAYER_1 = 1
     PLAYER_2 = 2
@@ -35,3 +37,9 @@ class Orientation(IntEnum):
 class BulletType(IntEnum):
     FRIEND = 0,
     ENEMY = 1,
+
+class GameMode(IntEnum):
+    SINGLEPLAYER = 1,
+    MULTIPLAYER_OFFLINE = 2,
+    MULTIPLAYER_ONLINE_HOST = 3,
+    MULTIPLAYER_ONLINE_CLIENT = 4,

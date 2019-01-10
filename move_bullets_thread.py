@@ -9,15 +9,17 @@ from helper import Helper
 class MoveBulletsThread(QThread):
     bullets_move_signal = pyqtSignal(list, list, list)
     dead_player_signal = pyqtSignal(int)
-    #bullet_impact_signal = pyqtSignal(int, int, Bullet)
 
     def __init__(self, parentQWidget = None):
         super(MoveBulletsThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
+        if self.parent_widget.socket is not None:
+            self.socket = self.parent_widget.socket
+        else:
+            self.socket = None
         self.was_canceled = False
 
     def run(self):
-        #self.was_canceled = False
         while not self.was_canceled:
             self.parent_widget.mutex.lock()
             self.moveBullets()
@@ -48,7 +50,6 @@ class MoveBulletsThread(QThread):
                 new_x -= 1
 
             if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.BULLET):
-                #print("moveBullets(): bullet_impact")
                 self.bulletImpact(new_x, new_y, bullet, bullets_to_be_removed, enemies_to_be_removed)
 
             else:
@@ -57,9 +58,7 @@ class MoveBulletsThread(QThread):
                 self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
                 bullets_with_new_position.append(bullet)
 
-        self.bullets_move_signal.emit(bullets_with_new_position,
-                                      bullets_to_be_removed,
-                                      enemies_to_be_removed)
+        self.bulletsMoveSignal(bullets_with_new_position, bullets_to_be_removed, enemies_to_be_removed)
 
     def bulletImpact(self, new_x, new_y, bullet, bullets_to_be_removed, enemies_to_be_removed):
         if not(0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):
@@ -92,20 +91,24 @@ class MoveBulletsThread(QThread):
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
                 if gb_player.player_type == PlayerType.PLAYER_1:
+                    #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
                 elif gb_player.player_type == PlayerType.PLAYER_2:
+                    #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
             else:
                 print(f"game over for {next_shape}")
                 self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
                 if next_shape is ElementType.PLAYER1:
                     self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
+                    #TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.dead_player_signal.emit(1)
                     if self.parent_widget.mode == 1 or self.parent_widget.player_2.lives <= 0:
                         self.gameOver()
 
                 elif next_shape is ElementType.PLAYER2:
                     self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
+                    #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.dead_player_signal.emit(2)
                     if self.parent_widget.player_1.lives <= 0:
                         self.gameOver()
@@ -126,11 +129,23 @@ class MoveBulletsThread(QThread):
         self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
         bullets_to_be_removed.append(bullet)
 
+    # region SIGNAL_EMITS
+    def bulletsMoveSignal(self, bullets_with_new_position, bullets_to_be_removed, enemies_to_be_removed):
+        self.bullets_move_signal.emit(bullets_with_new_position,
+                                      bullets_to_be_removed,
+                                      enemies_to_be_removed)
+        #TODO: SEND BULLETS_MOVE
+        if self.parent_widget.socket is not None:
+            data = pickle.dumps(("BULLETS_MOVED", (bullets_with_new_position, bullets_to_be_removed, enemies_to_be_removed)))
+            with self.socket:
+                self.socket.sendall(data)
+    # endregion
+
     def gameOver(self):
         self.parent_widget.clearBoard()
         self.parent_widget.move_enemy_thread.cancel()
-        # self.parent_widget.move_bullets_thread.cancel()
         self.parent_widget.player_1.lives = 0
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ubaci enum
         if self.parent_widget.mode == 2:
             self.parent_widget.player_2.lives = 0
         for enemy in self.parent_widget.enemy_dictionary:

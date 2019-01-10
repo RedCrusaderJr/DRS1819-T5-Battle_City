@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt
 from game_board import GameBoard
 from stat_frame import StatFrame
 import sys
-
+from enums import GameMode
 
 class MainWindowWidget(QWidget):
 
@@ -48,46 +48,50 @@ class BattleCity(QMainWindow):
 
         single_act = QAction("Single paleyer", self)
         single_act.triggered.connect(self.toggleSingle)
-        multi_act = QAction('Multipaleyer mode', self)
-        multi_act.triggered.connect(self.toggleMulti)
-
         mode_menu.addAction(single_act)
+
+        multi_act = QAction("Multiplayer mode", self)
+        multi_act.triggered.connect(self.toggleMulti)
         mode_menu.addAction(multi_act)
 
-        # start_act = QAction('Start game', self)
-        # start_act.triggered.connect(self.startGame)
+        online_host_act = QAction("Online multiplayer - HOST", self)
+        online_host_act.triggered.connect(self.toggleOnlineHost)
+        mode_menu.addAction(online_host_act)
+
+        online_client_act = QAction("Online multiplayer - CLIENT", self)
+        online_client_act.triggered.connect(self.toggleOnlineClient)
+        mode_menu.addAction(online_client_act)
 
         settings_menu.addMenu(mode_menu)
-        # settings_menu.addAction(start_act)
-
         self.show()
 
     def toggleSingle(self, mode):
         self.status_bar.showMessage("MODE: SINGLE PLAYER")
-        self.form_widget = MainWindowWidget(self, 1)
-        self.setCentralWidget(self.form_widget)
-        self.setStyleSheet("""
-                        QFrame#game_board_frame{
-                            background-color: rgb(0, 0, 0);
-                            }
-                        QFrame#stat_frame{
-                            background-color: rgb(255, 0, 0);
-                            }
-                """)
-        self.show()
+        self.startNewGame(GameMode.SINGLEPLAYER)
 
     def toggleMulti(self, mode):
         self.status_bar.showMessage("MODE: MULTIPLAYER")
-        self.form_widget = MainWindowWidget(self, 2)
+        self.startNewGame(GameMode.MULTIPLAYER_OFFLINE)
+
+    def toggleOnlineHost(self, mode):
+        self.status_bar.showMessage("MODE: ONLINE_HOST")
+        self.startNewGame(GameMode.MULTIPLAYER_ONLINE_HOST)
+
+    def toggleOnlineClient(self, mode):
+        self.status_bar.showMessage("MODE: ONLINE_CLIENT")
+        self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLINET)
+
+    def startNewGame(self, mode):
+        self.form_widget = MainWindowWidget(self, mode)
         self.setCentralWidget(self.form_widget)
         self.setStyleSheet("""
-                                QFrame#game_board_frame{
-                                    background-color: rgb(0, 0, 0);
-                                    }
-                                QFrame#stat_frame{
-                                    background-color: rgb(255, 0, 0);
-                                    }
-                        """)
+            QFrame#game_board_frame{
+                background-color: rgb(0, 0, 0);
+                }
+            QFrame#stat_frame{
+                background-color: rgb(255, 0, 0);
+                }
+        """)
         self.show()
 
     def onResize(self):
