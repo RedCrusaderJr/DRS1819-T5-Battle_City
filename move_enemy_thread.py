@@ -175,6 +175,9 @@ class MoveEnemyThread(QThread):
                         self.dead_player_signal.emit(2)
             else:
                 print(f"game over for {next_shape}")
+
+        elif next_shape is ElementType.BASE:
+            self.game_over_signal.emit()
     
         bullet.bullet_owner.active_bullet = None
         self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
