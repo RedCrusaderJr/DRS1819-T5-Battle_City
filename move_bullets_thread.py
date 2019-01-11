@@ -37,6 +37,7 @@ class MoveBulletsThread(QThread):
         self.button_end.resize(200, 50)
         self.button_end.setFont(name_font)
         self.button_end.hide()
+        self.parent_widget.game_over_signal.connect(self.gameOver)
 
     def run(self):
         while not self.was_canceled:
@@ -138,16 +139,15 @@ class MoveBulletsThread(QThread):
                     if self.parent_widget.player_1.lives <= 0:
                         self.gameOver()
 
-        elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
+        elif next_shape is ElementType.ENEMY and bullet.type == BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
-            
 
             for enemy in self.parent_widget.enemy_dictionary:
                 if new_x == enemy.x and new_y == enemy.y:
                     enemies_to_be_removed.append(enemy)
                     break
 
-        elif next_shape is ElementType.BASE:
+        elif next_shape is ElementType.BASE and bullet.type == BulletType.ENEMY:
             print("game over")
             self.gameOver()
 
