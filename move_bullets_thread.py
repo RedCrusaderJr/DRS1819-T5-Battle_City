@@ -14,6 +14,7 @@ class MoveBulletsThread(QThread):
     def __init__(self, parentQWidget = None):
         super(MoveBulletsThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
+        self.speed = 0.07
         if self.parent_widget.socket is not None:
             self.socket = self.parent_widget.socket
         else:
@@ -22,6 +23,7 @@ class MoveBulletsThread(QThread):
 
         self.button_restart = QPushButton('Restart', self.parent_widget)
         self.button_restart.clicked.connect(self.restartGame)
+        self.parent_widget.speed_up_signal.connect(self.speedUp)
         self.button_restart.move(250, 480)
         self.button_restart.resize(200, 50)
         name_font = self.button_restart.font()
@@ -41,10 +43,14 @@ class MoveBulletsThread(QThread):
             self.parent_widget.mutex.lock()
             self.moveBullets()
             self.parent_widget.mutex.unlock()
-            time.sleep(0.05)
+            time.sleep(self.speed)
 
     def cancel(self):
         self.was_canceled = True
+
+    def speedUp(self):
+        if self.speed - 0.01 > 0.02:
+            self.speed -= 0.01
 
     def moveBullets(self):
         bullets_with_new_position = []
@@ -52,6 +58,8 @@ class MoveBulletsThread(QThread):
         enemies_to_be_removed = []
 
         for bullet in self.parent_widget.bullet_dictionary:
+            if bullet in bullets_to_be_removed:
+                continue
             self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
 
             new_x = bullet.x

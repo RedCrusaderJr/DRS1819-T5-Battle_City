@@ -18,6 +18,8 @@ class MovePlayerThread(QThread):
     def __init__(self, commands, tank, parentQWidget = None):
         super(MovePlayerThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
+        self.parent_widget.speed_up_signal.connect(self.speedUp)
+        self.speed = 0.08
         if self.parent_widget.socket is not None:
             self.socket = self.parent_widget.socket
         else:
@@ -33,7 +35,7 @@ class MovePlayerThread(QThread):
             self.parent_widget.mutex.lock()
             self.playerControlls()
             self.parent_widget.mutex.unlock()
-            time.sleep(0.05)
+            time.sleep(self.speed)
 
 
     def cancel(self):
@@ -148,8 +150,12 @@ class MovePlayerThread(QThread):
                 self.playerMoved(new_x, new_y, new_orientation)
 
             self.parent_widget.mutex.unlock()
-            time.sleep(0.05)
+            time.sleep(self.speed)
             self.parent_widget.mutex.lock()
+
+    def speedUp(self):
+        if self.speed - 0.01 > 0.03:
+            self.speed -= 0.01
 
     def playerMoved(self, new_x, new_y, new_orientation):
         if self.tank.player_type == PlayerType.PLAYER_1:

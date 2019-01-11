@@ -29,6 +29,7 @@ class GameBoard(QFrame):
     change_level_signal = pyqtSignal()
     change_enemies_left_signal = pyqtSignal(int)
     restart_game_signal = pyqtSignal()
+    speed_up_signal = pyqtSignal()
 
     # tile width/height in px
     TILE_SIZE = 16
@@ -38,6 +39,7 @@ class GameBoard(QFrame):
         self.mode = mode
         self.commands_1 = []
         self.commands_2 = []
+
 
         self.socket = None
         if mode is GameMode.MULTIPLAYER_ONLINE_HOST or mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
@@ -465,7 +467,8 @@ class GameBoard(QFrame):
         self.loadLevel(self.current_level)
         self.change_enemies_left_signal.emit(self.num_of_all_enemies)
         self.change_level_signal.emit()
-        time.sleep(1)
+        self.speed_up_signal.emit()
+        time.sleep(0.5)
 
 
     def setPlayersForNextLevel(self):

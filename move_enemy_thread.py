@@ -16,6 +16,8 @@ class MoveEnemyThread(QThread):
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
+        self.parent_widget.speed_up_signal.connect(self.speedUp)
+        self.speed = 0.25
         if self.parent_widget.socket is not None:
             self.socket = self.parent_widget.socket
         else:
@@ -32,10 +34,14 @@ class MoveEnemyThread(QThread):
             if self.iterator >= len(self.parent_widget.enemy_dictionary):
                 self.iterator = 0
             self.parent_widget.mutex.unlock()
-            time.sleep(0.25)
+            time.sleep(self.speed)
 
     def cancel(self):
         self.was_canceled = True
+
+    def speedUp(self):
+        if self.speed - 0.03 > 0.07:
+            self.speed -= 0.03
 
     def moveEnemy(self):
         enemies_with_new_position = []
