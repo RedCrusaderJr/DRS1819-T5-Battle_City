@@ -68,7 +68,7 @@ class BattleCity(QMainWindow):
         self.status_bar.showMessage("Ready")
 
         menu_bar = self.menuBar()
-        settings_menu = menu_bar.addMenu("&Settings")
+        settings_menu = menu_bar.addMenu("&StartGame")
 
         mode_menu = QMenu("Mode", self)
 
