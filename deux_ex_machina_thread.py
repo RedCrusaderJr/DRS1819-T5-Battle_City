@@ -2,6 +2,7 @@ from PyQt5.QtCore import QThread, Qt, pyqtSignal
 import game_board as gb
 from multiprocessing import Pipe
 from enums import ElementType
+import time
 
 
 class DeuxExMachinaThread(QThread):
@@ -28,12 +29,16 @@ class DeuxExMachinaThread(QThread):
 
         element_type = self.parent_widget.getShapeType(width, height)
         if element_type == ElementType.NONE:
-            if self.parent_widget.force_x is not None and self.parent_widget.force_y is not None:
-                self.parent_widget.setShapeAt(self.parent_widget.force_x, self.parent_widget.force_y, ElementType.NONE)
+            #if self.parent_widget.force_x is not None and self.parent_widget.force_y is not None:
+            #   self.parent_widget.setShapeAt(self.parent_widget.force_x, self.parent_widget.force_y, ElementType.NONE)
             self.parent_widget.setShapeAt(width, height, force)
             self.parent_widget.force_x = width
             self.parent_widget.force_y = height
             print("Postavio")
+            self.parent_widget.mutex.unlock()
+            time.sleep(2)
+            self.parent_widget.mutex.lock()
+            self.parent_widget.setShapeAt(width, height, ElementType.NONE)
         else:
             print("Zauzeto polje")
         self.parent_widget.mutex.unlock()

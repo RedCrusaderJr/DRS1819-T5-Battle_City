@@ -30,6 +30,7 @@ class GameBoard(QFrame):
     change_enemies_left_signal = pyqtSignal(int)
     restart_game_signal = pyqtSignal()
     speed_up_signal = pyqtSignal()
+    game_over_signal = pyqtSignal()
 
     # tile width/height in px
     TILE_SIZE = 16
@@ -153,7 +154,7 @@ class GameBoard(QFrame):
         self.move_enemy_thread.bullet_fired_signal.connect(self.bulletFired)
         self.move_enemy_thread.bullet_impact_signal.connect(self.bulletMoved)
         self.move_enemy_thread.enemy_move_signal.connect(self.enemyCallback)
-
+        self.move_enemy_thread.dead_player_signal.connect(self.removeDeadPlayer)
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
         self.move_bullets_thread.dead_player_signal.connect(self.removeDeadPlayer)
@@ -825,3 +826,6 @@ class GameBoard(QFrame):
                           board_top + y * self.getSquareHeight(),
                           self.getSquareWidth(),
                           self.getSquareHeight())
+
+    def gameOver(self):
+        self.game_over_signal.emit()

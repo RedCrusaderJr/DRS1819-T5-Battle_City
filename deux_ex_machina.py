@@ -13,7 +13,7 @@ class DeuxExMachina(Process):
     def __run__(self, pipe: Pipe):
         print("Process started")
         while True:
-            time.sleep(random.randint(15, 31))
+            time.sleep(random.randint(5, 15))
             rand_width = random.randint(0, self.board_width - 1)
             rand_height = random.randint(0, self.board_height - 1)
             rand_force = random.randint(ElementType.LIFE, ElementType.FREEZE)
