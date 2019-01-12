@@ -101,7 +101,6 @@ class GameBoard(QFrame):
         self.move_enemy_thread.bullet_fired_signal.connect(self.bulletFired)
         self.move_enemy_thread.bullet_impact_signal.connect(self.bulletMoved)
         self.move_enemy_thread.enemy_move_signal.connect(self.enemyCallback)
-        self.move_enemy_thread.game_over_signal.connect(self.gameOver)
 
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
@@ -154,8 +153,6 @@ class GameBoard(QFrame):
         self.move_enemy_thread.bullet_impact_signal.connect(self.bulletMoved)
         self.move_enemy_thread.enemy_move_signal.connect(self.enemyCallback)
         self.move_enemy_thread.dead_player_signal.connect(self.removeDeadPlayer)
-        self.move_enemy_thread.game_over_signal.connect(self.gameOver)
-
         self.move_bullets_thread = MoveBulletsThread(self)
         self.move_bullets_thread.bullets_move_signal.connect(self.bulletMoved)
         self.move_bullets_thread.dead_player_signal.connect(self.removeDeadPlayer)

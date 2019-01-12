@@ -38,7 +38,7 @@ class DeuxExMachinaThread(QThread):
             self.parent_widget.mutex.unlock()
             time.sleep(2)
             self.parent_widget.mutex.lock()
-            self.parent_widget.setShapeAt(self.parent_widget.force_x, self.parent_widget.force_y, ElementType.NONE)
+            self.parent_widget.setShapeAt(width, height, ElementType.NONE)
         else:
             print("Zauzeto polje")
         self.parent_widget.mutex.unlock()
