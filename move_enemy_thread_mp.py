@@ -7,7 +7,6 @@ from bullet import Bullet
 import pickle
 
 class MoveEnemyThreadMP(QThread):
-    enemy_move_signal = pyqtSignal(list, list, list, list)
 
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThreadMP, self).__init__(parentQWidget)
@@ -79,12 +78,13 @@ class MoveEnemyThreadMP(QThread):
                     #transform = QTransform()
                     #transform.rotate(Helper.rotationFunction(enemy.direction, new_orientation))
                     enemy.direction = new_orientation
+                    self.parent_widget.setShapeAt(enemy.x, enemy.y, Helper.enumFromOrientationEnemy(new_orientation))
                     #enemies_with_new_orientation.append((enemy, transform))
             else:
                 self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
                 enemy.x = new_x
                 enemy.y = new_y
-                self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
+                self.parent_widget.setShapeAt(enemy.x, enemy.y, Helper.enumFromOrientationEnemy(enemy.direction))
 
         #self.chosen_enemy = self.chooseRandomEnemy()
        #if self.chosen_enemy is not None:
@@ -100,7 +100,6 @@ class MoveEnemyThreadMP(QThread):
        #                               [])
        #        else:
        #            self.bulletFired()
-        self.sendUpdatedEnemies()
 
         self.chosen_enemy = self.chooseRandomEnemy()
         if self.chosen_enemy is not None:
@@ -114,6 +113,8 @@ class MoveEnemyThreadMP(QThread):
                                             self.chosen_enemy.active_bullet)
                 else:
                     self.bulletFired()
+
+        self.sendUpdatedEnemies()
 
     def bulletImpactOnFire(self, new_x, new_y, bullet):
         if not (0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):
@@ -153,7 +154,6 @@ class MoveEnemyThreadMP(QThread):
     def sendUpdatedEnemies(self):
         id = "UPDATE_ENEMY"
         data = pickle.dumps((id, (self.parent_widget.board, self.parent_widget.enemy_list)), -1)
-        print(len(data))
         self.parent_widget.communication.conn1.sendall(data)
         self.parent_widget.communication.conn2.sendall(data)
 
@@ -168,10 +168,9 @@ class MoveEnemyThreadMP(QThread):
                 chosen_enemy = enemy
                 break
             i += 1
-        print(chosen_enemy)
         return  chosen_enemy
 
     def bulletFired(self):
         bullet = self.chosen_enemy.active_bullet
-        self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+        self.parent_widget.setShapeAt(bullet.x, bullet.y, Helper.enumFromOrientationBullet(bullet.orientation))
         self.parent_widget.bullet_list.append(bullet)

@@ -53,7 +53,8 @@ class MoveBulletsThreadMP(QThread):
             else:
                 bullet.x = new_x
                 bullet.y = new_y
-                self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.BULLET)
+                self.parent_widget.setShapeAt(bullet.x, bullet.y, Helper.enumFromOrientationBullet
+                (bullet.orientation))
 
         for bullet in bullets_to_be_removed:
             self.parent_widget.bullet_list.remove(bullet)
@@ -64,7 +65,6 @@ class MoveBulletsThreadMP(QThread):
     def sendUpdatedBullets(self):
         id = "UPDATE_BULLET"
         data = pickle.dumps((id, (self.parent_widget.board, self.parent_widget.bullet_list)), -1)
-        print(len(data))
         self.parent_widget.communication.conn1.sendall(data)
         self.parent_widget.communication.conn2.sendall(data)
 

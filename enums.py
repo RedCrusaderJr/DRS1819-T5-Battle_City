@@ -16,8 +16,23 @@ class ElementType(IntEnum):
     BULLET = 5,
     BASE = 6,
     LIFE = 7,
-    FREEZE = 8
-
+    FREEZE = 8,
+    ENEMY_UP = 9,
+    ENEMY_RIGHT = 10,
+    ENEMY_DOWN = 11,
+    ENEMY_LEFT = 12,
+    BULLET_UP = 13,
+    BULLET_RIGHT = 14,
+    BULLET_DOWN = 15,
+    BULLET_LEFT = 16,
+    PLAYER1_UP = 17,
+    PLAYER1_RIGHT = 18,
+    PLAYER1_DOWN = 19,
+    PLAYER1_LEFT = 20,
+    PLAYER2_UP = 21,
+    PLAYER2_RIGHT = 22,
+    PLAYER2_DOWN = 23,
+    PLAYER2_LEFT = 24
 
 class WallType(IntEnum):
     TILE_EMPTY = 0,

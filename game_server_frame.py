@@ -9,6 +9,7 @@ from enemy_tank import EnemyTank
 import pickle
 from move_enemy_thread_mp import MoveEnemyThreadMP
 from move_bullets_thread_mp import MoveBulletsThreadMP
+from move_player_thread_mp import MovePlayerThreadMP
 
 class GameServerFrame(QFrame):
     BoardWidth = 32
@@ -27,6 +28,10 @@ class GameServerFrame(QFrame):
         self.move_enemy_thread_mp.start()
         self.move_bullets_thread_mp = MoveBulletsThreadMP(self)
         self.move_bullets_thread_mp.start()
+        self.move_player_thread_mp1 = MovePlayerThreadMP(1, self)
+        self.move_player_thread_mp1.start()
+        self.move_player_thread_mp2 = MovePlayerThreadMP(2, self)
+        self.move_player_thread_mp2.start()
 
     def initGameBoard(self):
         self.num_of_all_enemies = 7
@@ -105,11 +110,11 @@ class GameServerFrame(QFrame):
                 elif ch == "1" and self.player_1.lives > 0:
                     self.player_1.setCoordinates(x, y)
                     self.player_1_starting_position = (x, y)
-                    self.setShapeAt(x, y, ElementType.PLAYER1)
+                    self.setShapeAt(x, y, ElementType.PLAYER1_UP)
                 elif ch == "2" and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
-                    self.setShapeAt(x, y, ElementType.PLAYER2)
+                    self.setShapeAt(x, y, ElementType.PLAYER2_UP)
                 x += 1
             x = 0
             y += 1

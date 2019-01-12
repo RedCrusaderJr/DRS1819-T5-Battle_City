@@ -1,5 +1,5 @@
 import game_server_frame as gb
-from enums import ElementType
+from enums import ElementType, Orientation
 
 class Helper:
 
@@ -26,3 +26,46 @@ class Helper:
                     #print(f"Collision: bullet with {element_type}")
 
         return is_collision
+
+    @staticmethod
+    def enumFromOrientationBullet(orientation):
+        if orientation == Orientation.UP:
+            return ElementType.BULLET_UP
+        elif orientation == Orientation.RIGHT:
+            return ElementType.BULLET_RIGHT
+        elif orientation == Orientation.DOWN:
+            return ElementType.BULLET_DOWN
+        else:
+            return ElementType.BULLET_LEFT
+
+    @staticmethod
+    def enumFromOrientationEnemy(orientation):
+        if orientation == Orientation.UP:
+            return ElementType.ENEMY_UP
+        elif orientation == Orientation.RIGHT:
+            return ElementType.ENEMY_RIGHT
+        elif orientation == Orientation.DOWN:
+            return ElementType.ENEMY_DOWN
+        else:
+            return ElementType.ENEMY_LEFT
+
+    @staticmethod
+    def enumFromOrientationPlayer(player_type, orientation):
+        if player_type == 1:
+            if orientation == Orientation.UP:
+                return ElementType.PLAYER1_UP
+            elif orientation == Orientation.RIGHT:
+                return ElementType.PLAYER1_RIGHT
+            elif orientation == Orientation.DOWN:
+                return ElementType.PLAYER1_DOWN
+            else:
+                return ElementType.PLAYER1_LEFT
+        if player_type == 2:
+            if orientation == Orientation.UP:
+                return ElementType.PLAYER2_UP
+            elif orientation == Orientation.RIGHT:
+                return ElementType.PLAYER2_RIGHT
+            elif orientation == Orientation.DOWN:
+                return ElementType.PLAYER2_DOWN
+            else:
+                return ElementType.PLAYER2_LEFT

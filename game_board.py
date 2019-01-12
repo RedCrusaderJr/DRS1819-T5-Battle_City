@@ -364,16 +364,86 @@ class GameBoard(QFrame):
                                     rect.left() + j * self.getSquareWidth(),
                                     board_top + i * self.getSquareHeight(),
                                     ElementType.PLAYER2)
-                elif shape_type == ElementType.ENEMY:
+                elif shape_type == ElementType.ENEMY_UP:
                     self.drawSquare(painter,
                                     rect.left() + j * self.getSquareWidth(),
                                     board_top + i * self.getSquareHeight(),
-                                    ElementType.ENEMY)
-                elif shape_type == ElementType.BULLET:
+                                    ElementType.ENEMY_UP)
+                elif shape_type == ElementType.ENEMY_RIGHT:
                     self.drawSquare(painter,
                                     rect.left() + j * self.getSquareWidth(),
                                     board_top + i * self.getSquareHeight(),
-                                    ElementType.BULLET)
+                                    ElementType.ENEMY_RIGHT)
+                elif shape_type == ElementType.ENEMY_DOWN:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.ENEMY_DOWN)
+                elif shape_type == ElementType.ENEMY_LEFT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.ENEMY_LEFT)
+                elif shape_type == ElementType.BULLET_UP:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.BULLET_UP)
+                elif shape_type == ElementType.BULLET_RIGHT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.BULLET_RIGHT)
+                elif shape_type == ElementType.BULLET_DOWN:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.BULLET_DOWN)
+                elif shape_type == ElementType.BULLET_LEFT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.BULLET_LEFT)
+                elif shape_type == ElementType.PLAYER1_LEFT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER1_LEFT)
+                elif shape_type == ElementType.PLAYER1_RIGHT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER1_RIGHT)
+                elif shape_type == ElementType.PLAYER1_DOWN:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER1_DOWN)
+                elif shape_type == ElementType.PLAYER1_UP:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER1_UP)
+                elif shape_type == ElementType.PLAYER2_LEFT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER2_LEFT)
+                elif shape_type == ElementType.PLAYER2_RIGHT:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER2_RIGHT)
+                elif shape_type == ElementType.PLAYER2_DOWN:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER2_DOWN)
+                elif shape_type == ElementType.PLAYER2_UP:
+                    self.drawSquare(painter,
+                                    rect.left() + j * self.getSquareWidth(),
+                                    board_top + i * self.getSquareHeight(),
+                                    ElementType.PLAYER2_UP)
         self.mutex.unlock()
 
     def keyPressEvent(self, event):
@@ -381,7 +451,10 @@ class GameBoard(QFrame):
                                        event.key() == Qt.Key_Left or  \
                                        event.key() == Qt.Key_Right or \
                                        event.key() == Qt.Key_Space:
-            self.commands_1.append(event.key())
+            if self.mode is not GameMode.MULTIPLAYER_ONLINE_CLIENT:
+                self.commands_1.append(event.key())
+            else:
+                self.sendCommand(event.key())
         elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or \
                                         event.key() == Qt.Key_A or \
                                         event.key() == Qt.Key_D or \
@@ -393,13 +466,28 @@ class GameBoard(QFrame):
                                        event.key() == Qt.Key_Left or  \
                                        event.key() == Qt.Key_Right or \
                                        event.key() == Qt.Key_Space:
-            self.commands_1.remove(event.key())
+            if self.mode is not GameMode.MULTIPLAYER_ONLINE_CLIENT:
+                self.commands_1.remove(event.key())
         elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or \
                                         event.key() == Qt.Key_A or \
                                         event.key() == Qt.Key_D or \
                                         event.key() == Qt.Key_F:
             self.commands_2.remove(event.key())
     # endregion
+
+    def sendCommand(self, key):
+        if key == Qt.Key_Up:
+            msg = "UP"
+        elif key == Qt.Key_Down:
+            msg = "DOWN"
+        elif key == Qt.Key_Left:
+            msg = "LEFT"
+        elif key == Qt.Key_Right:
+            msg = "RIGHT"
+        elif key == Qt.Key_Space:
+            msg = "FIRE"
+
+        self.socket.sendall(msg.encode('utf8'))
 
 
     #region EVIDENTION_METHODS
@@ -747,8 +835,7 @@ class GameBoard(QFrame):
         print("communicationCallback()")
     #endregion
 
-
-    def drawSquare(self, painter, x, y, type, direction = 2):
+    def drawSquare(self, painter, x, y, type):
         if type == ElementType.WALL:
             pix = QPixmap('./images/wall.jpg')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
@@ -773,47 +860,70 @@ class GameBoard(QFrame):
             pix = QPixmap('./images/tank2.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.ENEMY and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
-            if len(self.enemies_list) > 0:
-                rect = self.contentsRect()
-                board_top = rect.bottom() - GameBoard.BoardHeight * self.getSquareHeight()
-                for enemy in self.enemies_list:
-                    my_x = (x - rect.left()) // self.getSquareWidth()
-                    my_y = (y - board_top) // self.getSquareHeight()
-                    if enemy.x == my_x and enemy.y == my_y:
-                        direction = enemy.direction
-                        break
-
-            if direction == Orientation.UP:
-                pix = QPixmap('./images/enemy0.png')
-            elif direction == Orientation.RIGHT:
-                pix = QPixmap('./images/enemy1.png')
-            elif direction == Orientation.DOWN:
-                pix = QPixmap('./images/enemy2.png')
-            else:
-                pix = QPixmap('./images/enemy3.png')
-
+        elif type == ElementType.ENEMY_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/enemy0.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.BULLET and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
-            if len(self.bullets_list) > 0:
-                rect = self.contentsRect()
-                board_top = rect.bottom() - GameBoard.BoardHeight * self.getSquareHeight()
-                for bullet in self.bullets_list:
-                    my_x = (x - rect.left()) // self.getSquareWidth()
-                    my_y = (y - board_top) // self.getSquareHeight()
-                    if bullet.x == my_x and bullet.y == my_y:
-                        direction = bullet.orientation
-                        break
+        elif type == ElementType.ENEMY_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/enemy1.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.ENEMY_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/enemy2.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.ENEMY_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/enemy3.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.BULLET_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/flying_bullet0.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.BULLET_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/flying_bullet1.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.BULLET_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/flying_bullet2.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.BULLET_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/flying_bullet3.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
 
-            if direction == Orientation.UP:
-                pix = QPixmap('./images/flying_bullet0.png')
-            elif direction == Orientation.RIGHT:
-                pix = QPixmap('./images/flying_bullet1.png')
-            elif direction == Orientation.DOWN:
-                pix = QPixmap('./images/flying_bullet2.png')
-            else:
-                pix = QPixmap('./images/flying_bullet3.png')
+        elif type == ElementType.PLAYER1_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank10.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.PLAYER1_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank11.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.PLAYER1_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank12.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.PLAYER1_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank13.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+
+        elif type == ElementType.PLAYER2_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank20.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.PLAYER2_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank21.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.PLAYER2_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank22.png')
+            pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
+            painter.drawPixmap(x + 1, y + 1, pix1)
+        elif type == ElementType.PLAYER2_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            pix = QPixmap('./images/tank23.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
 
