@@ -488,8 +488,10 @@ class GameBoard(QFrame):
         elif key == Qt.Key_Space:
             msg = "FIRE"
 
-        self.socket.sendall(msg.encode('utf8'))
-
+        try:
+            self.socket.sendall(msg.encode('utf8'))
+        except:
+            pass
 
     #region EVIDENTION_METHODS
     def setShapeAt(self, x, y, shape_type):

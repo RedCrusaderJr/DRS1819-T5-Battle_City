@@ -80,14 +80,7 @@ class MoveEnemyThreadMP(QThread):
                             self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
                             self.parent_widget.bullet_list.remove(bullet_to_die)
                             bullet_to_die.bullet_owner.active_bullet = None
-                    #    self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
-                    #    self.parent_widget.enemy_list.remove(enemy)
-                        # bullet_to_die = self.parent_widget.findBulletAt(new_x, new_y)
-                        #if bullet_to_die is not None:
-                        #    self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
-                        #    bullets_to_be_removed.append(bullet_to_die)
-                        #else:
-                        #    print("moveEnemy(): bullet_to_die is None")
+
 
                 if not is_bullet_collision:
                     #transform = QTransform()
@@ -104,6 +97,7 @@ class MoveEnemyThreadMP(QThread):
         for elemnt in enemies_to_be_removed:
             self.parent_widget.enemy_list.remove(elemnt)
             self.parent_widget.num_of_all_enemies -= 1
+            self.send_status_update(enemies_left=self.parent_widget.num_of_all_enemies)
             if self.parent_widget.num_of_all_enemies > 0:
                 while (True):
                     rand_x = randint(0, self.parent_widget.BoardWidth)
@@ -112,6 +106,9 @@ class MoveEnemyThreadMP(QThread):
 
                 self.parent_widget.enemy_list.append(EnemyTank(rand_x))
                 self.parent_widget.setShapeAt(rand_x, 0, ElementType.ENEMY_DOWN)
+
+            elif self.parent_widget.num_of_all_enemies == -3:
+                self.parent_widget.advanceToNextLevel()
 
 
 
@@ -224,8 +221,8 @@ class MoveEnemyThreadMP(QThread):
         self.parent_widget.setShapeAt(bullet.x, bullet.y, Helper.enumFromOrientationBullet(bullet.orientation))
         self.parent_widget.bullet_list.append(bullet)
 
-    def send_status_update(self, player_1_life = None, player_2_life = None):
-        data = pickle.dumps((str("STATUS_UPDATE"), (player_1_life, player_2_life, None)), -1)
+    def send_status_update(self, player_1_life = None, player_2_life = None, enemies_left = None):
+        data = pickle.dumps((str("STATUS_UPDATE"), (player_1_life, player_2_life, enemies_left)), -1)
 
         self.send_msg(self.parent_widget.communication.conn1, data)
         self.send_msg(self.parent_widget.communication.conn2, data)
