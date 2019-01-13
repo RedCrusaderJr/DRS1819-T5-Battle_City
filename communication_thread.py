@@ -46,60 +46,62 @@ class CommunicationThread(QThread):
 
     def communication(self):
         text = self.recv_msg()
-        print("Dobio")
+
+        if text is None:
+            self.parent_widget.socket.close()
+            print("KRAJ")
+            self.cancel()
 
         self.parent_widget.mutex.lock()
-        id, data = pickle.loads(text)
+        if text is not None:
+            id, data = pickle.loads(text)
 
-        if id == "GAMEBOARD_INIT":
-            self.parent_widget.clearBoard()
-            self.parent_widget.board = data
-            self.parent_widget.update()
+            if id == "GAMEBOARD_INIT":
+                self.parent_widget.clearBoard()
+                self.parent_widget.board = data
+                self.parent_widget.update()
 
-        elif id == "UPDATE_ENEMY":
-            #self.parent_widget.clearBoard()
-            self.parent_widget.board = data
-            print(id)
-            #if len(self.parent_widget.enemies_list) > 0:
-            #    self.parent_widget.enemies_list.clear()
-            self.parent_widget.update()
-            #rect = self.parent_widget.contentsRect()
-            #board_top = rect.bottom() - GameServerFrame.BoardHeight * self.parent_widget.getSquareHeight()
-            #painter = QPainter(self.parent_widget)
-            #for enemy in data[1]:
-            #    self.parent_widget.drawSquare(painter,
-            #                    enemy.x,
-            #                    enemy.y,
-            #                    ElementType.ENEMY,
-            #                    enemy.direction)
-        elif id == "UPDATE_BULLET":
-            #self.parent_widget.clearBoard()
-            self.parent_widget.board = data
-            print(id)
-            #if len(self.parent_widget.bullets_list) > 0:
-            #    self.parent_widget.bullets_list.clear()
-            self.parent_widget.update()
+            elif id == "UPDATE_ENEMY":
+                self.parent_widget.board = data
+                self.parent_widget.update()
 
-        elif id == "UPDATE_PLAYERS":
-            self.parent_widget.clearBoard()
-            self.parent_widget.board = data
-            print(id)
-            self.parent_widget.update()
+            elif id == "UPDATE_BULLET":
+                self.parent_widget.board = data
+                self.parent_widget.update()
 
+            elif id == "UPDATE_PLAYERS":
+                self.parent_widget.clearBoard()
+                self.parent_widget.board = data
+                self.parent_widget.update()
+
+            elif id == "WINNER":
+                self.parent_widget.clearBoard()
+                self.parent_widget.board = data
+                self.parent_widget.update()
+                print("I WON")
+
+            elif id == "LOSER":
+                self.parent_widget.clearBoard()
+                self.parent_widget.board = data
+                self.parent_widget.update()
+                print("I LOSE :(")
+
+            elif id == "STATUS_UPDATE":
+                if data[0] is not None:
+                    self.parent_widget.change_lives_signal.emit(1, data[0])
+
+                if data[1] is not None:
+                    self.parent_widget.change_lives_signal.emit(2, data[1])
+
+                if data[2] is not None:
+                    self.parent_widget.change_enemies_left_signal.emit(data[2])
+
+            elif id == "UPDATE_LEVEL":
+                if data[0] is not None:
+                    self.parent_widget.change_enemies_left_signal.emit(data[0])
+
+                if data[1] is not None:
+                    self.parent_widget.change_level_signal.emit()
 
         self.parent_widget.mutex.unlock()
 
-    def enemyMoved(self, enemies_with_new_position, enemies_with_new_orientation, enemies_to_be_removed, bullets_to_be_removed):
-        print("enemyMoved")
-
-    def playerMoved(self, tank, transform):
-        print("playerMoved")
-
-    def bulletFired(self, bullet, transform):
-        print("bulletFired")
-
-    def bulletImpact(self, empty, bullets_to_be_removed, enemies_to_be_removed):
-        print("bulletImpact")
-
-    def bulletsMoved(self, bullets_with_new_position, bullets_to_be_removed, enemies_to_be_removed):
-        print("bulletsMoved")

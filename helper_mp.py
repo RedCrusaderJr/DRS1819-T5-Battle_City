@@ -20,7 +20,7 @@ class Helper:
                 if next_position_shape is ElementType.NONE:
                     is_collision = False
 
-            elif element_type is ElementType.BULLET:
+            elif element_type is ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
                 if next_position_shape is ElementType.NONE:
                     is_collision = False
                     #print(f"Collision: bullet with {element_type}")

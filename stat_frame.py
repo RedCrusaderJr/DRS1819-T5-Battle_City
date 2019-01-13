@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QGridLayout
+from enums import GameMode
 
 class StatFrame(QFrame):
 
@@ -17,7 +18,7 @@ class StatFrame(QFrame):
         self.level_num = 1
         self.enemies_left = game_board.num_of_all_enemies + 3
         self.player_1_lives = 3
-        if self.game_board.mode == 2:
+        if self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.player_2_lives = 3
 
         # name_font = self.level_num_label.font()
@@ -32,7 +33,7 @@ class StatFrame(QFrame):
         self.player_1_lives_label = QLabel("Player 1 lives: " + str(self.player_1_lives))
         #self.player_1_lives_label.setFont(name_font)
 
-        if self.game_board.mode == 2:
+        if self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.player_2_lives_label = QLabel("Player 2 lives: " + str(self.player_2_lives))
             #self.player_2_lives_label.setFont(name_font)
 
@@ -41,7 +42,7 @@ class StatFrame(QFrame):
         self.layout.addWidget(self.level_num_label)
         self.layout.addWidget(self.enemies_left_label)
         self.layout.addWidget(self.player_1_lives_label)
-        if self.game_board.mode == 2:
+        if self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.layout.addWidget(self.player_2_lives_label)
 
         # self.layout.addWidget(self.label)
@@ -51,7 +52,7 @@ class StatFrame(QFrame):
         if player == 1:
             self.player_1_lives = num_of_lives
             self.player_1_lives_label.setText("Player 1 lives: " + str(self.player_1_lives))
-        elif player == 2 and self.game_board.mode == 2:
+        elif player == 2 and (self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT):
             self.player_2_lives = num_of_lives
             self.player_2_lives_label.setText("Player 2 lives: " + str(self.player_2_lives))
 
@@ -78,7 +79,7 @@ class StatFrame(QFrame):
             self.enemies_left_label.setProperty('Size3', False)
             self.player_1_lives_label.setProperty('Size3', False)
 
-            if self.game_board.mode == 2:
+            if self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
                 self.player_2_lives_label.setProperty('Size1', True)
                 self.player_2_lives_label.setProperty('Size2', False)
                 self.player_2_lives_label.setProperty('Size3', False)
@@ -96,7 +97,7 @@ class StatFrame(QFrame):
             self.enemies_left_label.setProperty('Size3', False)
             self.player_1_lives_label.setProperty('Size3', False)
 
-            if self.game_board.mode == 2:
+            if self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
                 self.player_2_lives_label.setProperty('Size1', False)
                 self.player_2_lives_label.setProperty('Size2', True)
                 self.player_2_lives_label.setProperty('Size3', False)
@@ -114,7 +115,7 @@ class StatFrame(QFrame):
             self.enemies_left_label.setProperty('Size3', True)
             self.player_1_lives_label.setProperty('Size3', True)
 
-            if self.game_board.mode == 2:
+            if self.game_board.mode is GameMode.MULTIPLAYER_OFFLINE or self.game_board.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
                 self.player_2_lives_label.setProperty('Size1', False)
                 self.player_2_lives_label.setProperty('Size2', False)
                 self.player_2_lives_label.setProperty('Size3', True)

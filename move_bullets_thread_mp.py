@@ -5,9 +5,11 @@ import time
 from bullet import Bullet
 from enums import Orientation, ElementType, BulletType, PlayerType
 from helper_mp import Helper
+from enemy_tank import EnemyTank
 import sys
 import pickle
 import struct
+from random import randint
 
 class MoveBulletsThreadMP(QThread):
     def __init__(self, parentQWidget=None):
@@ -58,25 +60,34 @@ class MoveBulletsThreadMP(QThread):
                 (bullet.orientation))
 
         for bullet in bullets_to_be_removed:
-            self.parent_widget.bullet_list.remove(bullet)
-            bullet.bullet_owner.active_bullet = None
+            if bullet in self.parent_widget.bullet_list:
+                self.parent_widget.bullet_list.remove(bullet)
+                self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+                bullet.bullet_owner.active_bullet = None
 
         self.sendUpdatedBullets()
 
     def send_msg(self, sock, msg):
         # Prefix each message with a 4-byte length (network byte order)
         msg = struct.pack('>I', len(msg)) + msg
-        sock.sendall(msg)
+        try:
+            sock.sendall(msg)
+        except:
+            return
 
     def sendUpdatedBullets(self):
-        #id = "UPDATE_BULLET"
         data = pickle.dumps((str("UPDATE_BULLET"), self.parent_widget.board), -1)
         data2 = pickle.dumps((str("UPDATE_BULLET"), self.parent_widget.board), -1)
-        #self.parent_widget.communication.conn1.send(data)
-        #self.parent_widget.communication.conn2.send(data2)
 
         self.send_msg(self.parent_widget.communication.conn1, data)
         self.send_msg(self.parent_widget.communication.conn2, data2)
+
+
+    def send_status_update(self, player_1_life=None, player_2_life=None, enemies_left=None):
+        data = pickle.dumps((str("STATUS_UPDATE"), (player_1_life, player_2_life, enemies_left)), -1)
+
+        self.send_msg(self.parent_widget.communication.conn1, data)
+        self.send_msg(self.parent_widget.communication.conn2, data)
 
     def bulletImpact(self, new_x, new_y, bullet, bullets_to_be_removed):
         if not (0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):
@@ -85,11 +96,11 @@ class MoveBulletsThreadMP(QThread):
             return
 
         next_shape = self.parent_widget.getShapeType(new_x, new_y)
-
+        levelChanged = False
         if next_shape is ElementType.WALL:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
-        elif next_shape is ElementType.BULLET:
+        elif next_shape is ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
             other_bullet = self.findBulletAt(new_x, new_y)
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
             if other_bullet is not None:
@@ -99,53 +110,60 @@ class MoveBulletsThreadMP(QThread):
             else:
                 print("bulletImpact(): other_bullet is None")
 
-        #elif (
-        #        next_shape is ElementType.PLAYER1 or next_shape is ElementType.PLAYER2) and bullet.type is BulletType.ENEMY:
-        #    if next_shape is ElementType.PLAYER1:
-        #        gb_player = self.parent_widget.player_1
-        #    elif next_shape is ElementType.PLAYER2:
-        #        gb_player = self.parent_widget.player_2
-#
-        #    gb_player.lives -= 1
-        #    if gb_player.lives > 0:
-        #        self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
-        #        if gb_player.player_type == PlayerType.PLAYER_1:
-        #            # TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #            self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
-        #        elif gb_player.player_type == PlayerType.PLAYER_2:
-        #            # TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #            self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
-        #    else:
-        #        print(f"game over for {next_shape}")
-        #        self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
-        #        if next_shape is ElementType.PLAYER1:
-        #            self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
-        #            # TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #            self.dead_player_signal.emit(1)
-        #            if self.parent_widget.mode == 1 or self.parent_widget.player_2.lives <= 0:
-        #                self.gameOver()
-#
-        #        elif next_shape is ElementType.PLAYER2:
-        #            self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
-        #            # TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        #            self.dead_player_signal.emit(2)
-        #            if self.parent_widget.player_1.lives <= 0:
-        #                self.gameOver()
+        elif (next_shape is ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT) or next_shape is ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT)) and bullet.type is BulletType.ENEMY:
+            if next_shape is ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT):
+                gb_player = self.parent_widget.player_1
+                starting_position = self.parent_widget.player_1_starting_position
+            elif next_shape is ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT):
+                gb_player = self.parent_widget.player_2
+                starting_position = self.parent_widget.player_2_starting_position
 
-        #elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
-        #    self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
-            #for enemy in self.parent_widget.enemy_dictionary:
-            #    if new_x == enemy.x and new_y == enemy.y:
-            #        enemies_to_be_removed.append(enemy)
-            #        break
 
-        #elif next_shape is ElementType.BASE:
-        #    print("game over")
-        #    self.gameOver()
+            gb_player.lives -= 1
+            if gb_player.player_type == PlayerType.PLAYER_1:
+                self.send_status_update(player_1_life=gb_player.lives)
+            elif gb_player.player_type == PlayerType.PLAYER_2:
+                self.send_status_update(player_2_life=gb_player.lives)
 
-        self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
-        bullets_to_be_removed.append(bullet)
+            if gb_player.lives > 0:
+                self.parent_widget.setShapeAt(gb_player.x, gb_player.y, ElementType.NONE)
+                gb_player.x = starting_position[0]
+                gb_player.y = starting_position[1]
+                gb_player.orientation = Orientation.UP
+                self.parent_widget.setShapeAt(gb_player.x, gb_player.y, Helper.enumFromOrientationPlayer(gb_player.player_type, Orientation.UP))
+            else:
+                self.parent_widget.gameOver()
+        elif (next_shape is ElementType.ENEMY or (ElementType.ENEMY_UP <= next_shape <= ElementType.ENEMY_LEFT)) and bullet.type == BulletType.FRIEND:
+            self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
+
+            for enemy in self.parent_widget.enemy_list:
+                if new_x == enemy.x and new_y == enemy.y:
+                    self.parent_widget.enemy_list.remove(enemy)
+                    self.parent_widget.num_of_all_enemies -= 1
+                    self.send_status_update(enemies_left=self.parent_widget.num_of_all_enemies)
+                    if self.parent_widget.num_of_all_enemies > 0:
+                        while (True):
+                            rand_x = randint(0, self.parent_widget.BoardWidth)
+                            if self.parent_widget.getShapeType(rand_x, 0) == ElementType.NONE:
+                                break
+
+                        self.parent_widget.enemy_list.append(EnemyTank(rand_x))
+                        self.parent_widget.setShapeAt(rand_x, 0, ElementType.ENEMY_DOWN)
+                    elif self.parent_widget.num_of_all_enemies == -3:
+                        self.parent_widget.advanceToNextLevel()
+                        levelChanged = True
+                    break
+
+        elif next_shape is ElementType.BASE and bullet.type == BulletType.ENEMY:
+            self.parent_widget.gameOver()
+
+        if not levelChanged:
+            bullets_to_be_removed.append(bullet)
+            self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+
+
+
 
     def findBulletAt(self, x, y):
         for bullet in self.parent_widget.bullet_list:

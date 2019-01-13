@@ -20,10 +20,8 @@ class Communication:
             print(f"client2 accepted -> address: {self.addr2}")
 
         elif mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
-            print("Legen... wait for it...")
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((CLIENT_HOST, PORT))
-            print("...daryyyyyy!")
 
     def closeCommunication(self):
         self.socket.close()

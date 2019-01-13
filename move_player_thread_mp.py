@@ -6,6 +6,7 @@ from helper_mp import Helper
 from bullet import Bullet
 import pickle
 import struct
+from random import randint
 
 class MovePlayerThreadMP(QThread):
 
@@ -33,15 +34,20 @@ class MovePlayerThreadMP(QThread):
         self.was_canceled = True
 
     def movePlayer(self):
-        new_x = self.player.x
-        new_y = self.player.y
-        new_orientation = self.player.orientation
+        #new_x, new_y, new_orientation = None
 
         text = ""
         changed = False
         while True:
-            message = self.socket.recv(1024)
+            try:
+                message = self.socket.recv(1024)
+            except:
+                self.cancel()
+                return
             self.parent_widget.mutex.lock()
+            new_x = self.player.x
+            new_y = self.player.y
+            new_orientation = self.player.orientation
             text += str(message, 'utf8')
             if not message or len(message) < 1024:
                 break
@@ -78,20 +84,17 @@ class MovePlayerThreadMP(QThread):
                     self.bulletFired()
 
         if changed:
-            print(f"{new_x} {new_y}")
             if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.PLAYER2):
                 if not (
                         new_x >= self.parent_widget.BoardWidth or new_x < 0 or new_y >= self.parent_widget.BoardHeight or new_y < 0):
-                    print("freeeeezeeeeeeee")
                     if self.parent_widget.getShapeType(new_x, new_y) == ElementType.FREEZE:
-                        print("freeeeezeeeeeeee")
+                        pass
                     elif self.parent_widget.getShapeType(new_x, new_y) == ElementType.LIFE:
                         self.player.lives += 1
                     else:
                         new_x = self.player.x
                         new_y = self.player.y
                 else:
-                    print("freeeeezeeeeeeee2")
                     new_x = self.player.x
                     new_y = self.player.y
 
@@ -113,7 +116,7 @@ class MovePlayerThreadMP(QThread):
         if next_shape is ElementType.WALL:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
-        elif next_shape is ElementType.BULLET:
+        elif next_shape is ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
             other_bullet = self.parent_widget.findBulletAt(new_x, new_y)
             if other_bullet is not None:
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y,
@@ -122,19 +125,23 @@ class MovePlayerThreadMP(QThread):
             else:
                 print("Move enemy thread: bulletImpactOnFire(): other_bullet is None")
 
-        #elif (
-        #        next_shape is ElementType.PLAYER1 or next_shape is ElementType.PLAYER2) and bullet.type is BulletType.ENEMY:
-        #    if next_shape is ElementType.PLAYER1:
-        #        gb_player = self.parent_widget.player_1
-        #    elif next_shape is ElementType.PLAYER2:
-        #        gb_player = self.parent_widget.player_2
-#
-        #    if gb_player.lives > 0:
-        #        self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
-        #        gb_player.lives -= 1
-        #    else:
-        #        print(f"game over for {next_shape}")
+        elif (next_shape is ElementType.ENEMY or ElementType.ENEMY_UP <= next_shape <= ElementType.ENEMY_LEFT) and bullet.type is BulletType.FRIEND:
+            enemy_to_be_removed = self.parent_widget.findEnemyAt(new_x, new_y)
+            self.parent_widget.setShapeAt(enemy_to_be_removed.x, enemy_to_be_removed.y, ElementType.NONE)
 
+            self.parent_widget.enemy_list.remove(enemy_to_be_removed)
+            self.parent_widget.num_of_all_enemies -= 1
+            self.send_status_update(self.parent_widget.num_of_all_enemies)
+            if self.parent_widget.num_of_all_enemies > 0:
+                while (True):
+                    rand_x = randint(0, self.parent_widget.BoardWidth)
+                    if self.parent_widget.getShapeType(rand_x, 0) == ElementType.NONE:
+                        break
+
+                self.parent_widget.enemy_list.append(EnemyTank(rand_x))
+                self.parent_widget.setShapeAt(rand_x, 0, ElementType.ENEMY_DOWN)
+            elif self.parent_widget.num_of_all_enemies == -3:
+                self.parent_widget.advanceToNextLevel()
         bullet.bullet_owner.active_bullet = None
         #self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
 
@@ -155,7 +162,10 @@ class MovePlayerThreadMP(QThread):
     def send_msg(self, sock, msg):
         # Prefix each message with a 4-byte length (network byte order)
         msg = struct.pack('>I', len(msg)) + msg
-        sock.sendall(msg)
+        try:
+            sock.sendall(msg)
+        except:
+            return
 
     def sendUpdatedPlayers(self):
         #id = "UPDATE_PLAYERS"
@@ -167,6 +177,13 @@ class MovePlayerThreadMP(QThread):
 
         self.send_msg(self.parent_widget.communication.conn1, data)
         self.send_msg(self.parent_widget.communication.conn2, data2)
+
+
+    def send_status_update(self, num_of_enemies):
+        data = pickle.dumps((str("STATUS_UPDATE"), (None, None, num_of_enemies)), -1)
+
+        self.send_msg(self.parent_widget.communication.conn1, data)
+        self.send_msg(self.parent_widget.communication.conn2, data)
 
 
 
