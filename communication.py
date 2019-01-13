@@ -4,7 +4,8 @@ from enums import GameMode
 class Communication:
 
     def __init__(self, mode):
-        HOST = "localhost"
+        HOST = ""
+        CLIENT_HOST = "localhost"
         PORT = 50005
         self.socket = None
         self.conn = None
@@ -21,7 +22,7 @@ class Communication:
         elif mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
             print("Legen... wait for it...")
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.socket.connect((HOST, PORT))
+            self.socket.connect((CLIENT_HOST, PORT))
             print("...daryyyyyy!")
 
     def closeCommunication(self):

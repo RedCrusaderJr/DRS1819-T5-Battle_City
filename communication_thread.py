@@ -43,10 +43,9 @@ class CommunicationThread(QThread):
 
         elif id == "UPDATE_ENEMY":
             #self.parent_widget.clearBoard()
-            self.parent_widget.board = data[0]
+            self.parent_widget.board = data
             #if len(self.parent_widget.enemies_list) > 0:
             #    self.parent_widget.enemies_list.clear()
-            self.parent_widget.enemies_list = data[1]
             self.parent_widget.update()
             #rect = self.parent_widget.contentsRect()
             #board_top = rect.bottom() - GameServerFrame.BoardHeight * self.parent_widget.getSquareHeight()
@@ -59,14 +58,12 @@ class CommunicationThread(QThread):
             #                    enemy.direction)
         elif id == "UPDATE_BULLET":
             #self.parent_widget.clearBoard()
-            self.parent_widget.board = data[0]
+            self.parent_widget.board = data
             #if len(self.parent_widget.bullets_list) > 0:
             #    self.parent_widget.bullets_list.clear()
-            self.parent_widget.bullets_list = data[1]
             self.parent_widget.update()
 
         elif id == "UPDATE_PLAYERS":
-            print("UPDATING PLAYERS!!!!!!!!!!")
             self.parent_widget.clearBoard()
             self.parent_widget.board = data
             self.parent_widget.update()

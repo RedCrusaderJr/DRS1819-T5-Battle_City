@@ -64,7 +64,7 @@ class MoveBulletsThreadMP(QThread):
 
     def sendUpdatedBullets(self):
         id = "UPDATE_BULLET"
-        data = pickle.dumps((id, (self.parent_widget.board, self.parent_widget.bullet_list)), -1)
+        data = pickle.dumps((id, self.parent_widget.board), -1)
         self.parent_widget.communication.conn1.sendall(data)
         self.parent_widget.communication.conn2.sendall(data)
 
