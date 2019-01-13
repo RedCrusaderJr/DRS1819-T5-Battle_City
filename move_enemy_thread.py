@@ -2,7 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QTransform
 import time
 from enemy_tank import EnemyTank
-from enums import ElementType, Orientation, BulletType, PlayerType
+from enums import ElementType, Orientation, BulletType, PlayerType, GameMode
 from helper import Helper
 from bullet import Bullet
 
@@ -12,7 +12,6 @@ class MoveEnemyThread(QThread):
     bullet_impact_signal = pyqtSignal(list, list, list)
     enemy_move_signal = pyqtSignal(list, list, list, list)
     dead_player_signal = pyqtSignal(int)
-    game_over_signal = pyqtSignal()
 
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThread, self).__init__(parentQWidget)
@@ -159,25 +158,30 @@ class MoveEnemyThread(QThread):
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
                 gb_player.lives -= 1
-                if gb_player.player_type == PlayerType.PLAYER_1:
+                if gb_player.player_type == PlayerType.PLAYER_1 and self.parent_widget.mode == GameMode.MULTIPLAYER_OFFLINE:
                     self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
                     if gb_player.lives <= 0 and self.parent_widget.player_2.lives <= 0:
                         self.dead_player_signal.emit(1)
-                        self.game_over_signal.emit()
+                        self.parent_widget.gameOver()
                     elif gb_player.lives <= 0:
                         self.dead_player_signal.emit(1)
-                else:
+                elif gb_player.player_type == PlayerType.PLAYER_2:
                     self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
                     if gb_player.lives <= 0 and self.parent_widget.player_1.lives <= 0:
                         self.dead_player_signal.emit(2)
-                        self.game_over_signal.emit()
+                        self.parent_widget.gameOver()
                     elif gb_player.lives <= 0:
                         self.dead_player_signal.emit(2)
-            #else:
-                #print(f"game over for {next_shape}")
+                else:
+                    self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
+                    if gb_player.lives <= 0:
+                        self.dead_player_signal.emit(1)
+                        self.parent_widget.gameOver()
+            else:
+                print(f"game over for {next_shape}")
 
         elif next_shape is ElementType.BASE:
-            self.game_over_signal.emit()
+            self.parent_widget.gameOver()
     
         bullet.bullet_owner.active_bullet = None
         self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)

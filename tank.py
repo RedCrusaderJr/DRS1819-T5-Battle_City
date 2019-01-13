@@ -77,7 +77,7 @@ class Tank:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        if player_type == PlayerType.PLAYER_1:
+        if self.player_type == PlayerType.PLAYER_1:
             self.pix_map = QPixmap('./images/tank1.png')
-        elif player_type == PlayerType.PLAYER_2:
+        elif self.player_type == PlayerType.PLAYER_2:
             self.pix_map = QPixmap('./images/tank2.png')

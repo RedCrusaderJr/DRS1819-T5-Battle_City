@@ -7,7 +7,7 @@ class Bullet:
 
     def __init__(self, bullet_type, x, y, orientation, owner):
         self.pm_launched = QPixmap('./images/launched_bullet.png')
-        self.pm_flying = QPixmap('./images/flying_bullet.png')
+        self.pm_flying = QPixmap('./images/flying_bullet0.png')
         self.pm_impact = QPixmap('./images/impact_bullet.png')
         self.x = x
         self.y = y
