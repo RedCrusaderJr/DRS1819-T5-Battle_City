@@ -152,10 +152,12 @@ class MoveEnemyThreadMP(QThread):
         #self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
 
     def sendUpdatedEnemies(self):
-        id = "UPDATE_ENEMY"
-        data = pickle.dumps((id, self.parent_widget.board), -1)
-        self.parent_widget.communication.conn1.sendall(data)
-        self.parent_widget.communication.conn2.sendall(data)
+        #id = "UPDATE_ENEMY"
+
+        data = pickle.dumps((str("UPDATE_ENEMY"), self.parent_widget.board), -1)
+        data2 = pickle.dumps((str("UPDATE_ENEMY"), self.parent_widget.board), -1)
+        self.parent_widget.communication.conn1.send(data)
+        self.parent_widget.communication.conn2.send(data2)
 
     def chooseRandomEnemy(self):
         if self.iterator >= len(self.parent_widget.enemy_list):

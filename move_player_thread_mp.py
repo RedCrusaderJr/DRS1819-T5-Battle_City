@@ -42,7 +42,6 @@ class MovePlayerThreadMP(QThread):
             message = self.socket.recv(1024)
             self.parent_widget.mutex.lock()
             text += str(message, 'utf8')
-            print(f"{text} {self.player_num}")
             if not message or len(message) < 1024:
                 break
             self.parent_widget.mutex.unlock()
@@ -153,11 +152,12 @@ class MovePlayerThreadMP(QThread):
         self.parent_widget.setShapeAt(self.player.x, self.player.y, Helper.enumFromOrientationPlayer(self.player.player_type, self.player.orientation))
 
     def sendUpdatedPlayers(self):
-        id = "UPDATE_PLAYERS"
-        print(f"{self.parent_widget.player_2_starting_position} {self.player.x} {self.player.y}")
-        data = pickle.dumps((id, self.parent_widget.board), -1)
-        self.parent_widget.communication.conn1.sendall(data)
-        self.parent_widget.communication.conn2.sendall(data)
+        #id = "UPDATE_PLAYERS"
+        data = pickle.dumps((str("UPDATE_PLAYERS"), self.parent_widget.board), -1)
+        data2 = pickle.dumps((str("UPDATE_PLAYERS"), self.parent_widget.board), -1)
+
+        self.parent_widget.communication.conn1.send(data)
+        self.parent_widget.communication.conn2.send(data2)
 
 
 

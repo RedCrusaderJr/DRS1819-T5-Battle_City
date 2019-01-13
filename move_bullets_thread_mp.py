@@ -63,10 +63,11 @@ class MoveBulletsThreadMP(QThread):
         self.sendUpdatedBullets()
 
     def sendUpdatedBullets(self):
-        id = "UPDATE_BULLET"
-        data = pickle.dumps((id, self.parent_widget.board), -1)
-        self.parent_widget.communication.conn1.sendall(data)
-        self.parent_widget.communication.conn2.sendall(data)
+        #id = "UPDATE_BULLET"
+        data = pickle.dumps((str("UPDATE_BULLET"), self.parent_widget.board), -1)
+        data2 = pickle.dumps((str("UPDATE_BULLET"), self.parent_widget.board), -1)
+        self.parent_widget.communication.conn1.send(data)
+        self.parent_widget.communication.conn2.send(data2)
 
     def bulletImpact(self, new_x, new_y, bullet, bullets_to_be_removed):
         if not (0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):

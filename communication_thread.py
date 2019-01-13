@@ -34,6 +34,8 @@ class CommunicationThread(QThread):
                 break
             self.parent_widget.mutex.unlock()
 
+        print(len(text))
+
         id, data = pickle.loads(text)
 
         if id == "GAMEBOARD_INIT":
@@ -44,6 +46,7 @@ class CommunicationThread(QThread):
         elif id == "UPDATE_ENEMY":
             #self.parent_widget.clearBoard()
             self.parent_widget.board = data
+            print(id)
             #if len(self.parent_widget.enemies_list) > 0:
             #    self.parent_widget.enemies_list.clear()
             self.parent_widget.update()
@@ -59,6 +62,7 @@ class CommunicationThread(QThread):
         elif id == "UPDATE_BULLET":
             #self.parent_widget.clearBoard()
             self.parent_widget.board = data
+            print(id)
             #if len(self.parent_widget.bullets_list) > 0:
             #    self.parent_widget.bullets_list.clear()
             self.parent_widget.update()
@@ -66,6 +70,7 @@ class CommunicationThread(QThread):
         elif id == "UPDATE_PLAYERS":
             self.parent_widget.clearBoard()
             self.parent_widget.board = data
+            print(id)
             self.parent_widget.update()
 
 
