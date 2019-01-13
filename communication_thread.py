@@ -4,6 +4,7 @@ from PyQt5.QtCore import QThread, Qt, pyqtSignal
 from PyQt5.QtGui import QTransform, QPainter
 from bullet import  Bullet
 from tank import Tank
+import struct
 
 class CommunicationThread(QThread):
     player_move_signal = pyqtSignal(Tank, QTransform)
@@ -24,18 +25,30 @@ class CommunicationThread(QThread):
     def cancel(self):
         self.was_canceled = True
 
+    def recv_msg(self):
+        # Read message length and unpack it into an integer
+        raw_msglen = self.recvall(self.parent_widget.socket, 4)
+        if not raw_msglen:
+            return None
+        msglen = struct.unpack('>I', raw_msglen)[0]
+        # Read the message data
+        return self.recvall(self.parent_widget.socket, msglen)
+
+    def recvall(self, sock, n):
+        # Helper function to recv n bytes or return None if EOF is hit
+        data = b''
+        while len(data) < n:
+            packet = sock.recv(n - len(data))
+            if not packet:
+                return None
+            data += packet
+        return data
+
     def communication(self):
-        text = b""
-        while True:
-            bin = self.parent_widget.socket.recv(1024)
-            self.parent_widget.mutex.lock()
-            text += bin
-            if not bin or len(bin) < 1024:
-                break
-            self.parent_widget.mutex.unlock()
+        text = self.recv_msg()
+        print("Dobio")
 
-        print(len(text))
-
+        self.parent_widget.mutex.lock()
         id, data = pickle.loads(text)
 
         if id == "GAMEBOARD_INIT":

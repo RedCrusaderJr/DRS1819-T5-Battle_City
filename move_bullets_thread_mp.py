@@ -7,6 +7,7 @@ from enums import Orientation, ElementType, BulletType, PlayerType
 from helper_mp import Helper
 import sys
 import pickle
+import struct
 
 class MoveBulletsThreadMP(QThread):
     def __init__(self, parentQWidget=None):
@@ -62,12 +63,20 @@ class MoveBulletsThreadMP(QThread):
 
         self.sendUpdatedBullets()
 
+    def send_msg(self, sock, msg):
+        # Prefix each message with a 4-byte length (network byte order)
+        msg = struct.pack('>I', len(msg)) + msg
+        sock.sendall(msg)
+
     def sendUpdatedBullets(self):
         #id = "UPDATE_BULLET"
         data = pickle.dumps((str("UPDATE_BULLET"), self.parent_widget.board), -1)
         data2 = pickle.dumps((str("UPDATE_BULLET"), self.parent_widget.board), -1)
-        self.parent_widget.communication.conn1.send(data)
-        self.parent_widget.communication.conn2.send(data2)
+        #self.parent_widget.communication.conn1.send(data)
+        #self.parent_widget.communication.conn2.send(data2)
+
+        self.send_msg(self.parent_widget.communication.conn1, data)
+        self.send_msg(self.parent_widget.communication.conn2, data2)
 
     def bulletImpact(self, new_x, new_y, bullet, bullets_to_be_removed):
         if not (0 <= new_x <= self.parent_widget.BoardWidth - 1 and 0 <= new_y <= self.parent_widget.BoardHeight - 1):

@@ -5,6 +5,7 @@ from enums import ElementType, Orientation, BulletType
 from helper_mp import Helper
 from bullet import Bullet
 import pickle
+import struct
 
 class MovePlayerThreadMP(QThread):
 
@@ -151,13 +152,21 @@ class MovePlayerThreadMP(QThread):
 
         self.parent_widget.setShapeAt(self.player.x, self.player.y, Helper.enumFromOrientationPlayer(self.player.player_type, self.player.orientation))
 
+    def send_msg(self, sock, msg):
+        # Prefix each message with a 4-byte length (network byte order)
+        msg = struct.pack('>I', len(msg)) + msg
+        sock.sendall(msg)
+
     def sendUpdatedPlayers(self):
         #id = "UPDATE_PLAYERS"
         data = pickle.dumps((str("UPDATE_PLAYERS"), self.parent_widget.board), -1)
         data2 = pickle.dumps((str("UPDATE_PLAYERS"), self.parent_widget.board), -1)
 
-        self.parent_widget.communication.conn1.send(data)
-        self.parent_widget.communication.conn2.send(data2)
+        #self.parent_widget.communication.conn1.send(data)
+        #self.parent_widget.communication.conn2.send(data2)
+
+        self.send_msg(self.parent_widget.communication.conn1, data)
+        self.send_msg(self.parent_widget.communication.conn2, data2)
 
 
 

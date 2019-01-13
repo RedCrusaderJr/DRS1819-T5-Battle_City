@@ -5,6 +5,7 @@ from enums import ElementType, Orientation, BulletType
 from helper_mp import Helper
 from bullet import Bullet
 import pickle
+import struct
 
 class MoveEnemyThreadMP(QThread):
 
@@ -151,13 +152,24 @@ class MoveEnemyThreadMP(QThread):
         bullet.bullet_owner.active_bullet = None
         #self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
 
+    def send_msg(self, sock, msg):
+        # Prefix each message with a 4-byte length (network byte order)
+        msg = struct.pack('>I', len(msg)) + msg
+        sock.sendall(msg)
+
     def sendUpdatedEnemies(self):
         #id = "UPDATE_ENEMY"
 
         data = pickle.dumps((str("UPDATE_ENEMY"), self.parent_widget.board), -1)
         data2 = pickle.dumps((str("UPDATE_ENEMY"), self.parent_widget.board), -1)
-        self.parent_widget.communication.conn1.send(data)
-        self.parent_widget.communication.conn2.send(data2)
+
+        #print(len(data))
+
+        #self.parent_widget.communication.conn1.send(data)
+        #self.parent_widget.communication.conn2.send(data2)
+
+        self.send_msg(self.parent_widget.communication.conn1, data)
+        self.send_msg(self.parent_widget.communication.conn2, data2)
 
     def chooseRandomEnemy(self):
         if self.iterator >= len(self.parent_widget.enemy_list):

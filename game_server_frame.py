@@ -10,6 +10,8 @@ import pickle
 from move_enemy_thread_mp import MoveEnemyThreadMP
 from move_bullets_thread_mp import MoveBulletsThreadMP
 from move_player_thread_mp import MovePlayerThreadMP
+import struct
+
 
 class GameServerFrame(QFrame):
     BoardWidth = 32
@@ -63,11 +65,20 @@ class GameServerFrame(QFrame):
             self.setShapeAt(self.enemy_list[i].x, self.enemy_list[i].y, ElementType.ENEMY)
         self.sendBoard()
 
+    def send_msg(self, sock, msg):
+        # Prefix each message with a 4-byte length (network byte order)
+        print("Poslato")
+        msg = struct.pack('>I', len(msg)) + msg
+        sock.sendall(msg)
+
     def sendBoard(self):
         id = "GAMEBOARD_INIT"
         data = pickle.dumps((id, self.board), -1)
-        self.communication.conn1.sendall(data)
-        self.communication.conn2.sendall(data)
+        #self.communication.conn1.sendall(data)
+        #self.communication.conn2.sendall(data)
+
+        self.send_msg(self.communication.conn1, data)
+        self.send_msg(self.communication.conn2, data)
 
     def getShapeType(self, x, y):
         return self.board[(y * GameServerFrame.BoardWidth) + x]
