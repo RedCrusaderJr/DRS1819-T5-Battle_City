@@ -87,8 +87,8 @@ class MoveEnemyThread(QThread):
                         if bullet_to_die is not None:
                             self.parent_widget.setShapeAt(bullet_to_die.x, bullet_to_die.y, ElementType.NONE)
                             bullets_to_be_removed.append(bullet_to_die)
-                        else:
-                            print("moveEnemy(): bullet_to_die is None")
+                        #else:
+                            #print("moveEnemy(): bullet_to_die is None")
 
                 if not is_bullet_collision:
                     transform = QTransform()
@@ -146,8 +146,8 @@ class MoveEnemyThread(QThread):
             if other_bullet is not None:
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
                 bullets_to_be_removed.append(other_bullet)
-            else:
-                print("Move enemy thread: bulletImpactOnFire(): other_bullet is None")
+            #else:
+                #print("Move enemy thread: bulletImpactOnFire(): other_bullet is None")
 
         elif (next_shape is ElementType.PLAYER1 or next_shape is ElementType.PLAYER2) and bullet.type is BulletType.ENEMY:
             if next_shape is ElementType.PLAYER1:

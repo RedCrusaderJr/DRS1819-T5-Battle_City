@@ -11,7 +11,7 @@ class DeuxExMachina(Process):
         self.board_height = boardHeight
 
     def __run__(self, pipe: Pipe):
-        print("Process started")
+        #print("Process started")
         while True:
             time.sleep(random.randint(5, 15))
             rand_width = random.randint(0, self.board_width - 1)
@@ -19,4 +19,4 @@ class DeuxExMachina(Process):
             rand_force = random.randint(ElementType.LIFE, ElementType.FREEZE)
 
             pipe.send((rand_width, rand_height, rand_force))
-            print(f"Send: {rand_force}")
+            #print(f"Send: {rand_force}")

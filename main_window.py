@@ -1,69 +1,109 @@
-from PyQt5.QtWidgets import QWidget, QMainWindow, QApplication, QAction, QMenu, QSplitter, QHBoxLayout, QVBoxLayout, QFrame
+from PyQt5.QtWidgets import QWidget, QMainWindow, QApplication, QAction, QMenu, QSplitter, QHBoxLayout, QVBoxLayout, QFrame, QLabel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QEvent
 from game_board import GameBoard
-from stat_frame import StatFrame
+from stat_frame import StatFrame, DecisionFrame
 import sys
 from enums import GameMode
 
 class MainWindowWidget(QWidget):
 
-    def __init__(self, parent, mode):
+    def __init__(self, parent, mode, board_size, stat_size, stat_font_size = 2):
         super(MainWindowWidget, self).__init__(parent)
-        self.layout = QHBoxLayout(self)
+        self.stat_font_size = stat_font_size
+
+        self.board_width, self.board_height = board_size
+        self.stat_width, self.stat_height = stat_size
+
+        self.h_layout = QHBoxLayout(self)
 
         self.game_board_frame = GameBoard(self, mode)
         self.mode = mode
-        self.game_board_frame.setMinimumSize(1200, 675)
-        self.game_board_frame.setMaximumSize(1200, 675)
+        self.game_board_frame.setMinimumSize(self.board_width, self.board_height)
+        self.game_board_frame.setMaximumSize(self.board_width, self.board_height)
         self.game_board_frame.setObjectName("game_board_frame")
-        self.layout.addWidget(self.game_board_frame)
+        self.h_layout.addWidget(self.game_board_frame)
 
         self.game_board_frame.restart_game_signal.connect(self.restartGame)
 
-        self.stat_frame = StatFrame(self, self.game_board_frame)
-        self.stat_frame.setMinimumSize(300, 675)
-        self.stat_frame.setMaximumSize(300, 675)
+        self.stat_frame = StatFrame(self, self.game_board_frame, self.stat_font_size)
+        self.stat_frame.setMinimumSize(self.stat_width, self.stat_height)
+        self.stat_frame.setMaximumSize(self.stat_width, self.stat_height)
         self.stat_frame.setObjectName("stat_frame")
-        self.layout.addWidget(self.stat_frame)
+        self.h_layout.addWidget(self.stat_frame)
+
+        #self.v_layout = QVBoxLayout(self)
+        #self.v_layout.addLayout(self.h_layout)
+
+        #self.decision_frame = DecisionFrame(self)
+        #self.decision_frame.setMinimumSize(self.decision_width, self.decision_height)
+        #self.decision_frame.setMaximumSize(self.decision_width, self.decision_height)
+        #self.decision_frame.setObjectName("decision_frame")
+        #self.v_layout.addWidget(self.decision_frame)
+
+        self.setLayout(self.h_layout)
 
         self.game_board_frame.setFocus()
 
-        self.setLayout(self.layout)
-
     def restartGame(self):
+        #TODO: da li samo hidovanje radi posao?
         self.game_board_frame.hide()
         self.stat_frame.hide()
 
+        self.resize(self.main_window_width, self.main_window_height)
+        self.setFixedSize(self.size());
+
+        self.h_layout = QHBoxLayout(self)
+
         self.game_board_frame = GameBoard(self, self.mode)
-        self.game_board_frame.setMinimumSize(1200, 675)
-        self.game_board_frame.setMaximumSize(1200, 675)
+        self.game_board_frame.setMinimumSize(self.board_width, self.board_height)
+        self.game_board_frame.setMaximumSize(self.board_width, self.board_height)
         self.game_board_frame.setObjectName("game_board_frame")
-        self.layout.addWidget(self.game_board_frame)
+        self.h_layout.addWidget(self.game_board_frame)
 
         self.game_board_frame.restart_game_signal.connect(self.restartGame)
 
-        self.stat_frame = StatFrame(self, self.game_board_frame)
-        self.stat_frame.setMinimumSize(300, 675)
-        self.stat_frame.setMaximumSize(300, 675)
+        self.stat_frame = StatFrame(self, self.game_board_frame, self.stat_font_size)
+        self.stat_frame.setMinimumSize(self.stat_width, self.stat_height)
+        self.stat_frame.setMaximumSize(self.stat_width, self.stat_height)
         self.stat_frame.setObjectName("stat_frame")
-        self.layout.addWidget(self.stat_frame)
+        self.h_layout.addWidget(self.stat_frame)
+
+        #self.v_layout = QVBoxLayout(self)
+        #self.v_layout.addLayout(self.h_layout)
+#
+        #self.decision_frame = DecisionFrame(self)
+        #self.decision_frame.setMinimumSize(self.decision_width, self.decision_height)
+        #self.decision_frame.setMaximumSize(self.decision_width, self.decision_height)
+        #self.decision_frame.setObjectName("decision_frame")
+        #self.v_layout.addWidget(self.decision_frame)
+#
+        self.setLayout(self.h_layout)
 
         self.game_board_frame.setFocus()
 
-        self.setLayout(self.layout)
-
+    def endGame(self):
+        pass
 
 class BattleCity(QMainWindow):
 
     def __init__(self):
-        super().__init__()
+        super(BattleCity, self).__init__()
 
         #flags = Qt.WindowFlags() & ~Qt.WindowMinimizeButtonHint
         #self.setWindowFlags(flags)
         self.setWindowFlags(Qt.WindowCloseButtonHint)
-        self.setWindowIcon(QIcon('./images/enemy.png'))
+        self.setWindowIcon(QIcon('./images/icon.jpg'))
 
+        self.main_window_width = 1600
+        self.main_window_height = 900
+        self.board_width = 1200
+        self.board_height = 675
+        self.stat_width = 300
+        self.stat_height = 675
+
+        self.stat_font_size = 2
+        self.form_widget = None
 
         self.initUI()
         self.classicPalette()
@@ -71,58 +111,81 @@ class BattleCity(QMainWindow):
     def initUI(self):
         self.setObjectName("main_window")
 
-        self.resize(1600,900)
+        #TODO:
+        self.resize(self.main_window_width,self.main_window_height)
         self.setFixedSize(self.size());
 
         self.status_bar = self.statusBar()
+        self.status_bar.setObjectName("status_bar")
         self.status_bar.showMessage("Ready")
 
-        menu_bar = self.menuBar()
-        settings_menu = menu_bar.addMenu("&StartGame")
+        self.menu_bar = self.menuBar()
+        self.menu_bar.mode_menu = self.menu_bar.addMenu("&Game")
+        self.menu_bar.theme_menu = self.menu_bar.addMenu("&Theme")
+        self.menu_bar.window_size_menu = self.menu_bar.addMenu("&Window_size")
 
-        #region MODES
-        mode_menu = QMenu("Mode", self)
 
-        single_act = QAction("Single paleyer", self)
-        single_act.triggered.connect(self.toggleSingle)
-        mode_menu.addAction(single_act)
+        #region GAME
+        self.menu_bar.mode_menu.single_act = QAction("Single paleyer", self)
+        self.menu_bar.mode_menu.single_act.triggered.connect(self.toggleSingle)
+        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.single_act)
 
-        multi_act = QAction("Multiplayer mode", self)
-        multi_act.triggered.connect(self.toggleMulti)
-        mode_menu.addAction(multi_act)
+        self.menu_bar.mode_menu.multi_act = QAction("Multiplayer mode", self)
+        self.menu_bar.mode_menu.multi_act.triggered.connect(self.toggleMulti)
+        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.multi_act)
 
-        online_host_act = QAction("Online multiplayer - HOST", self)
-        online_host_act.triggered.connect(self.toggleOnlineHost)
-        mode_menu.addAction(online_host_act)
+        self.menu_bar.mode_menu.online_host_act = QAction("Online multiplayer - HOST", self)
+        self.menu_bar.mode_menu.online_host_act.triggered.connect(self.toggleOnlineHost)
+        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.online_host_act)
 
-        online_client_act = QAction("Online multiplayer - CLIENT", self)
-        online_client_act.triggered.connect(self.toggleOnlineClient)
-        mode_menu.addAction(online_client_act)
+        self.menu_bar.mode_menu.online_client_act = QAction("Online multiplayer - CLIENT", self)
+        self.menu_bar.mode_menu.online_client_act.triggered.connect(self.toggleOnlineClient)
+        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.online_client_act)
+
+        self.menu_bar.mode_menu.end_game_act = QAction("End game", self)
+        self.menu_bar.mode_menu.end_game_act.triggered.connect(self.toggleEndGame)
+        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.end_game_act)
+
+        self.menu_bar.mode_menu.reset_game_act = QAction("Restart game", self)
+        self.menu_bar.mode_menu.reset_game_act.triggered.connect(self.toggleRestartGame)
+        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.reset_game_act)
         #endregion
 
         #region THEMES
-        palette_menu = QMenu("Theme", self)
+        self.menu_bar.theme_menu.classic_palette_act = QAction("Classic palette", self)
+        self.menu_bar.theme_menu.classic_palette_act.triggered.connect(self.classicPalette)
+        self.menu_bar.theme_menu.addAction(self.menu_bar.theme_menu.classic_palette_act)
 
-        classic_palette_act = QAction("Classic palette", self)
-        classic_palette_act.triggered.connect(self.classicPalette)
-        palette_menu.addAction(classic_palette_act)
+        self.menu_bar.theme_menu.cold_whisper_palette_act = QAction("Cold whisper palette", self)
+        self.menu_bar.theme_menu.cold_whisper_palette_act.triggered.connect(self.coldWhisperPalette)
+        self.menu_bar.theme_menu.addAction(self.menu_bar.theme_menu.cold_whisper_palette_act)
 
-        cold_whisper_palette_act = QAction("Cold whisper palette", self)
-        cold_whisper_palette_act.triggered.connect(self.coldWhisperPalette)
-        palette_menu.addAction(cold_whisper_palette_act)
-
-        raspberry_bush_palette_act = QAction("Raspberry bush palette", self)
-        raspberry_bush_palette_act.triggered.connect(self.raspberryBushPalette)
-        palette_menu.addAction(raspberry_bush_palette_act)
+        self.menu_bar.theme_menu.raspberry_bush_palette_act = QAction("Raspberry bush palette", self)
+        self.menu_bar.theme_menu.raspberry_bush_palette_act.triggered.connect(self.raspberryBushPalette)
+        self.menu_bar.theme_menu.addAction(self.menu_bar.theme_menu.raspberry_bush_palette_act)
 
         #endregion
 
-        settings_menu.addMenu(mode_menu)
-        settings_menu.addMenu(palette_menu)
+        #region WINDOW_SIZE
+        self.menu_bar.window_size_menu.small_act = QAction("Small", self)
+        self.menu_bar.window_size_menu.small_act.triggered.connect(self.smallWindow)
+        self.menu_bar.window_size_menu.addAction(self.menu_bar.window_size_menu.small_act)
+
+        self.menu_bar.window_size_menu.medium_act = QAction("Medium", self)
+        self.menu_bar.window_size_menu.medium_act.triggered.connect(self.mediumWindow)
+        self.menu_bar.window_size_menu.addAction(self.menu_bar.window_size_menu.medium_act)
+
+        self.menu_bar.window_size_menu.large_act = QAction("Large", self)
+        self.menu_bar.window_size_menu.large_act.triggered.connect(self.largeWindow)
+        self.menu_bar.window_size_menu.addAction(self.menu_bar.window_size_menu.large_act)
+        #endregion
+
+        #settings_menu.addMenu(mode_menu)
+        #settings_menu.addMenu(palette_menu)
 
         self.show()
 
-    #region TOGGLE_MODE
+    #region TOGGLE_GAME
     def toggleSingle(self, mode):
         self.status_bar.showMessage("MODE: SINGLE PLAYER")
         self.startNewGame(GameMode.SINGLEPLAYER)
@@ -139,11 +202,15 @@ class BattleCity(QMainWindow):
         self.status_bar.showMessage("MODE: ONLINE_CLIENT")
         self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
-    def startNewGame(self, mode):
-        self.form_widget = MainWindowWidget(self, mode)
-        self.setCentralWidget(self.form_widget)
-        self.show()
+    def toggleEndGame(self, mode):
+        pass
+        #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
+        #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
+    def toggleRestartGame(self, mode):
+        pass
+        #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
+        #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
     #endregion
 
     #region TOGGLE_PALETTES
@@ -158,10 +225,25 @@ class BattleCity(QMainWindow):
             QFrame#game_board_frame{
                 background-color: #000000;
             }
-            QLabel {
+            QLabel[Size1=true] {
                 color: 	#ffffff;
+                font: 6pt;
+            }
+            QLabel[Size2=true] {
+                color: 	#ffffff;
+                font: 18pt;
+            }
+            QLabel[Size3=true] {
+                color: 	#ffffff;
+                font: 24pt;
+            }
+            #status_bar {
+                background-color: 	#ffffff;
             }
         """)
+        self.setStyle(self.style())
+        if self.form_widget is not None:
+            self.form_widget.stat_frame.fontSizeChange()
 
     def coldWhisperPalette(self):
         self.setStyleSheet("""
@@ -174,10 +256,25 @@ class BattleCity(QMainWindow):
             QFrame#game_board_frame{
                 background-color: #06130d;
             }
-            QLabel {
+            QLabel[Size1=true] {
                 color: 	#869267;
+                font: 6pt;
+            }
+            QLabel[Size2=true] {
+                color: 	#869267;
+                font: 18pt;
+            }
+            QLabel[Size3=true] {
+                color: 	#869267;
+                font: 24pt;
+            }
+            #status_bar {
+                background-color: 	#ffffff;
             }
         """)
+        self.setStyle(self.style())
+        if self.form_widget is not None:
+            self.form_widget.stat_frame.fontSizeChange()
 
     def raspberryBushPalette(self):
         self.setStyleSheet("""
@@ -190,11 +287,122 @@ class BattleCity(QMainWindow):
             QFrame#game_board_frame{
                 background-color: #1a001a;
             }
-            QLabel {
+            QLabel[Size1=true] {
                 color: #bf004d;
+                font: 6pt;
+            }
+            QLabel[Size2=true] {
+                color: #bf004d;
+                font: 18pt;
+            }
+            QLabel[Size3=true] {
+                color: #bf004d;
+                font: 24pt;
+            }
+            #status_bar {
+                background-color: 	#ffffff;
             }
         """)
+        self.setStyle(self.style())
+        if self.form_widget is not None:
+            self.form_widget.stat_frame.fontSizeChange()
     #endregion
+
+    #region TOGGLE_WINDOW_SIZE
+    def smallWindow(self):
+        self.main_window_width = 640
+        self.main_window_height = 360
+        self.board_width = 480
+        self.board_height = 270
+        self.stat_width = 100
+        self.stat_height = 270
+
+        self.setFixedSize(self.main_window_width, self.main_window_height);
+        self.resize(self.main_window_width, self.main_window_height)
+        self.setCentralWidget(self.form_widget)
+
+        self.stat_font_size = 1
+        if self.form_widget is not None:
+            if self.form_widget.stat_frame is not None:
+                self.form_widget.stat_frame.font_size = self.stat_font_size
+                self.form_widget.stat_frame.fontSizeChange()
+
+    def mediumWindow(self):
+        self.main_window_width = 1600
+        self.main_window_height = 900
+        self.board_width = 1200
+        self.board_height = 675
+        self.stat_width = 300
+        self.stat_height = 675
+
+        self.setFixedSize(self.main_window_width, self.main_window_height);
+        self.resize(self.main_window_width, self.main_window_height)
+        self.setCentralWidget(self.form_widget)
+
+        self.stat_font_size = 2
+        if self.form_widget is not None:
+            if self.form_widget.stat_frame is not None:
+                self.form_widget.stat_frame.font_size = self.stat_font_size
+                self.form_widget.stat_frame.fontSizeChange()
+
+    def largeWindow(self):
+        self.main_window_width = 1760
+        self.main_window_height = 990
+        self.board_width = 1328
+        self.board_height = 747
+        self.stat_width = 340
+        self.stat_height = 747
+
+        self.setFixedSize(self.main_window_width, self.main_window_height);
+        self.resize(self.main_window_width, self.main_window_height)
+        self.setCentralWidget(self.form_widget)
+
+        self.stat_font_size = 3
+        if self.form_widget is not None:
+            if self.form_widget.stat_frame is not None:
+                self.form_widget.stat_frame.font_size = self.stat_font_size
+                self.form_widget.stat_frame.fontSizeChange()
+    #endregion
+
+    def startNewGame(self, mode):
+        self.form_widget = MainWindowWidget(self,
+                                            mode,
+                                           (self.board_width, self.board_height),
+                                           (self.stat_width, self.stat_height),
+                                           self.stat_font_size)
+        self.setCentralWidget(self.form_widget)
+        self.show()
+
+    def gameOver(self):
+        self.parent_widget.clearBoard()
+        self.parent_widget.move_enemy_thread.cancel()
+        self.parent_widget.player_1.lives = 0
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ubaci enum
+        if self.parent_widget.mode == 2:
+            self.parent_widget.player_2.lives = 0
+
+        for enemy in self.parent_widget.enemy_dictionary:
+            self.parent_widget.enemy_dictionary[enemy].hide()
+        self.parent_widget.loadLevel(0)
+
+        self.button_restart.show()
+        self.button_end.show()
+
+    def restartGame(self):
+        print("restartGame")
+        # self.parent_widget.clearBoard()
+        #self.parent_widget.move_player_1_thread.cancel()
+        #if self.parent_widget.mode == 2:
+        #    self.parent_widget.move_player_2_thread.cancel()
+        #self.parent_widget.move_bullets_thread.cancel()
+        #self.parent_widget.restart_game_signal.emit()
+
+    def endGame(self):
+        print("endGame")
+        #self.parent_widget.move_player_1_thread.cancel()
+        #if self.parent_widget.mode == 2:
+        #    self.parent_widget.move_player_2_thread.cancel()
+        #self.parent_widget.move_bullets_thread.cancel()
 
 if __name__ == "__main__":
     app = QApplication([])

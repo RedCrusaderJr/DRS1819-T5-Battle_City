@@ -202,8 +202,8 @@ class MovePlayerThread(QThread):
             if other_bullet is not None:
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
                 bullets_to_be_removed.append(other_bullet)
-            else:
-                print("Move player thread: bulletImpactOnFire(): other_bullet is None")
+            #else:
+                #print("Move player thread: bulletImpactOnFire(): other_bullet is None")
 
         elif next_shape is ElementType.ENEMY and bullet.type is BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
@@ -213,8 +213,8 @@ class MovePlayerThread(QThread):
                     enemies_to_be_removed.append(enemy)
                     break
 
-        elif next_shape is ElementType.BASE:
-            print("game over")
+        #elif next_shape is ElementType.BASE:
+            #print("game over")
         bullet.bullet_owner.active_bullet = None
 
         self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
