@@ -30,6 +30,7 @@ class GameBoard(QFrame):
     change_enemies_left_signal = pyqtSignal(int)
     restart_game_signal = pyqtSignal()
     speed_up_signal = pyqtSignal()
+    game_over_tool_bar_signal = pyqtSignal()
     game_over_signal = pyqtSignal()
 
     # tile width/height in px
@@ -569,9 +570,10 @@ class GameBoard(QFrame):
         self.change_enemies_left_signal.emit(self.num_of_all_enemies)
         self.change_level_signal.emit()
         self.speed_up_signal.emit()
+
         #TODO: SIGNAL to main_window: advance
         #TODO BUG: sleep duzi od 0.5, deux_ex_machina
-        time.sleep(0.5)
+        time.sleep(5)
         # TODO: SIGNAL to main_window: sleep over
 
     def setPlayersForNextLevel(self):
@@ -839,7 +841,7 @@ class GameBoard(QFrame):
 
     def drawSquare(self, painter, x, y, type):
         if type == ElementType.WALL:
-            pix = QPixmap('./images/wall.jpg')
+            pix = QPixmap('./images/wall4.jpg')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
         elif type == ElementType.BASE:

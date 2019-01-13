@@ -10,15 +10,15 @@ class MainWindowWidget(QWidget):
 
     def __init__(self, parent, mode, board_size, stat_size, stat_font_size = 2):
         super(MainWindowWidget, self).__init__(parent)
-        self.stat_font_size = stat_font_size
-
+        self.mode = mode
         self.board_width, self.board_height = board_size
         self.stat_width, self.stat_height = stat_size
+        self.stat_font_size = stat_font_size
 
         self.h_layout = QHBoxLayout(self)
 
-        self.game_board_frame = GameBoard(self, mode)
-        self.mode = mode
+        self.game_board_frame = GameBoard(self, self.mode)
+        self.game_board_frame.game_over_tool_bar_signal.connect(parent.gameOver)
         self.game_board_frame.setMinimumSize(self.board_width, self.board_height)
         self.game_board_frame.setMaximumSize(self.board_width, self.board_height)
         self.game_board_frame.setObjectName("game_board_frame")
@@ -31,15 +31,6 @@ class MainWindowWidget(QWidget):
         self.stat_frame.setMaximumSize(self.stat_width, self.stat_height)
         self.stat_frame.setObjectName("stat_frame")
         self.h_layout.addWidget(self.stat_frame)
-
-        #self.v_layout = QVBoxLayout(self)
-        #self.v_layout.addLayout(self.h_layout)
-
-        #self.decision_frame = DecisionFrame(self)
-        #self.decision_frame.setMinimumSize(self.decision_width, self.decision_height)
-        #self.decision_frame.setMaximumSize(self.decision_width, self.decision_height)
-        #self.decision_frame.setObjectName("decision_frame")
-        #self.v_layout.addWidget(self.decision_frame)
 
         self.setLayout(self.h_layout)
 
@@ -93,7 +84,8 @@ class BattleCity(QMainWindow):
         #flags = Qt.WindowFlags() & ~Qt.WindowMinimizeButtonHint
         #self.setWindowFlags(flags)
         self.setWindowFlags(Qt.WindowCloseButtonHint)
-        self.setWindowIcon(QIcon('./images/icon.jpg'))
+        self.setWindowIcon(QIcon('./images/tank_icon.png'))
+        self.setWindowTitle("Battle City")
 
         self.main_window_width = 1600
         self.main_window_height = 900
@@ -120,35 +112,26 @@ class BattleCity(QMainWindow):
         self.status_bar.showMessage("Ready")
 
         self.menu_bar = self.menuBar()
-        self.menu_bar.mode_menu = self.menu_bar.addMenu("&Game")
+        self.menu_bar.start_game = self.menu_bar.addMenu("&Start Game")
         self.menu_bar.theme_menu = self.menu_bar.addMenu("&Theme")
-        self.menu_bar.window_size_menu = self.menu_bar.addMenu("&Window_size")
+        self.menu_bar.window_size_menu = self.menu_bar.addMenu("&Window Size")
 
+        #region START GAME
+        self.menu_bar.start_game.single_act = QAction("Single player", self)
+        self.menu_bar.start_game.single_act.triggered.connect(self.toggleSingle)
+        self.menu_bar.start_game.addAction(self.menu_bar.start_game.single_act)
 
-        #region GAME
-        self.menu_bar.mode_menu.single_act = QAction("Single paleyer", self)
-        self.menu_bar.mode_menu.single_act.triggered.connect(self.toggleSingle)
-        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.single_act)
+        self.menu_bar.start_game.multi_act = QAction("Multiplayer mode", self)
+        self.menu_bar.start_game.multi_act.triggered.connect(self.toggleMulti)
+        self.menu_bar.start_game.addAction(self.menu_bar.start_game.multi_act)
 
-        self.menu_bar.mode_menu.multi_act = QAction("Multiplayer mode", self)
-        self.menu_bar.mode_menu.multi_act.triggered.connect(self.toggleMulti)
-        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.multi_act)
+        self.menu_bar.start_game.online_host_act = QAction("Online multiplayer - HOST", self)
+        self.menu_bar.start_game.online_host_act.triggered.connect(self.toggleOnlineHost)
+        self.menu_bar.start_game.addAction(self.menu_bar.start_game.online_host_act)
 
-        self.menu_bar.mode_menu.online_host_act = QAction("Online multiplayer - HOST", self)
-        self.menu_bar.mode_menu.online_host_act.triggered.connect(self.toggleOnlineHost)
-        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.online_host_act)
-
-        self.menu_bar.mode_menu.online_client_act = QAction("Online multiplayer - CLIENT", self)
-        self.menu_bar.mode_menu.online_client_act.triggered.connect(self.toggleOnlineClient)
-        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.online_client_act)
-
-        self.menu_bar.mode_menu.end_game_act = QAction("End game", self)
-        self.menu_bar.mode_menu.end_game_act.triggered.connect(self.toggleEndGame)
-        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.end_game_act)
-
-        self.menu_bar.mode_menu.reset_game_act = QAction("Restart game", self)
-        self.menu_bar.mode_menu.reset_game_act.triggered.connect(self.toggleRestartGame)
-        self.menu_bar.mode_menu.addAction(self.menu_bar.mode_menu.reset_game_act)
+        self.menu_bar.start_game.online_client_act = QAction("Online multiplayer - CLIENT", self)
+        self.menu_bar.start_game.online_client_act.triggered.connect(self.toggleOnlineClient)
+        self.menu_bar.start_game.addAction(self.menu_bar.start_game.online_client_act)
         #endregion
 
         #region THEMES
@@ -163,7 +146,6 @@ class BattleCity(QMainWindow):
         self.menu_bar.theme_menu.raspberry_bush_palette_act = QAction("Raspberry bush palette", self)
         self.menu_bar.theme_menu.raspberry_bush_palette_act.triggered.connect(self.raspberryBushPalette)
         self.menu_bar.theme_menu.addAction(self.menu_bar.theme_menu.raspberry_bush_palette_act)
-
         #endregion
 
         #region WINDOW_SIZE
@@ -180,8 +162,15 @@ class BattleCity(QMainWindow):
         self.menu_bar.window_size_menu.addAction(self.menu_bar.window_size_menu.large_act)
         #endregion
 
-        #settings_menu.addMenu(mode_menu)
-        #settings_menu.addMenu(palette_menu)
+        self.menu_bar.restart_game_act = QAction("Restart Game", self)
+        self.menu_bar.restart_game_act.triggered.connect(self.toggleRestartGame)
+        self.menu_bar.addAction(self.menu_bar.restart_game_act)
+        self.menu_bar.restart_game_act.setEnabled(False)
+
+        self.menu_bar.end_game_act = QAction("End Game", self)
+        self.menu_bar.end_game_act.triggered.connect(self.toggleEndGame)
+        self.menu_bar.addAction(self.menu_bar.end_game_act)
+        self.menu_bar.end_game_act.setEnabled(False)
 
         self.show()
 
@@ -203,12 +192,12 @@ class BattleCity(QMainWindow):
         self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
     def toggleEndGame(self, mode):
-        pass
+        print("end game")
         #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
         #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
     def toggleRestartGame(self, mode):
-        pass
+        print("restart game")
         #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
         #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
     #endregion
@@ -371,22 +360,20 @@ class BattleCity(QMainWindow):
                                            (self.stat_width, self.stat_height),
                                            self.stat_font_size)
         self.setCentralWidget(self.form_widget)
+
+        self.menu_bar.start_game.setEnabled(False)
+        self.menu_bar.theme_menu.setEnabled(False)
+        self.menu_bar.window_size_menu.setEnabled(False)
+        self.menu_bar.restart_game_act.setEnabled(True)
+        self.menu_bar.end_game_act.setEnabled(True)
+
         self.show()
 
     def gameOver(self):
-        self.parent_widget.clearBoard()
-        self.parent_widget.move_enemy_thread.cancel()
-        self.parent_widget.player_1.lives = 0
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ubaci enum
-        if self.parent_widget.mode == 2:
-            self.parent_widget.player_2.lives = 0
-
-        for enemy in self.parent_widget.enemy_dictionary:
-            self.parent_widget.enemy_dictionary[enemy].hide()
-        self.parent_widget.loadLevel(0)
-
-        self.button_restart.show()
-        self.button_end.show()
+        self.menu_bar.start_game.setEnabled(True)
+        self.menu_bar.theme_menu.setEnabled(True)
+        self.menu_bar.window_size_menu.setEnabled(True)
+        self.menu_bar.end_game_act.setEnabled(False)
 
     def restartGame(self):
         print("restartGame")

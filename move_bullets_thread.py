@@ -21,23 +21,8 @@ class MoveBulletsThread(QThread):
             self.socket = None
         self.was_canceled = False
 
-        #self.button_restart = QPushButton('Restart', self.parent_widget)
-        #self.button_restart.clicked.connect(self.restartGame)
         self.parent_widget.speed_up_signal.connect(self.speedUp)
-        #self.button_restart.move(250, 480)
-        #self.button_restart.resize(200, 50)
-        #name_font = self.button_restart.font()
-        #name_font.setPointSize(15)
-        #self.button_restart.setFont(name_font)
-        #self.button_restart.hide()
-#
-        #self.button_end = QPushButton('End', self.parent_widget)
-        #self.button_end.clicked.connect(self.endGame)
-        #self.button_end.move(550, 480)
-        #self.button_end.resize(200, 50)
-        #self.button_end.setFont(name_font)
-        #self.button_end.hide()
-        #self.parent_widget.game_over_signal.connect(self.gameOver)
+        self.parent_widget.game_over_signal.connect(self.gameOver)
 
     def run(self):
         while not self.was_canceled:
@@ -178,24 +163,7 @@ class MoveBulletsThread(QThread):
             self.parent_widget.enemy_dictionary[enemy].hide()
         self.parent_widget.loadLevel(0)
 
-        #self.button_restart.show()
-        #self.button_end.show()
-
-    def restartGame(self):
-        # self.parent_widget.clearBoard()
-        self.parent_widget.move_player_1_thread.cancel()
-        if self.parent_widget.mode == 2:
-            self.parent_widget.move_player_2_thread.cancel()
-        self.parent_widget.move_bullets_thread.cancel()
-        self.parent_widget.restart_game_signal.emit()
-
-    def endGame(self):
-        self.parent_widget.move_player_1_thread.cancel()
-        if self.parent_widget.mode == 2:
-            self.parent_widget.move_player_2_thread.cancel()
-        self.parent_widget.move_bullets_thread.cancel()
-        #print('endddddddddddddd')
-
+        self.parent_widget.game_over_tool_bar_signal.emit()
 
     def findBulletAt(self, x, y):
         for bullet in self.parent_widget.bullet_dictionary:

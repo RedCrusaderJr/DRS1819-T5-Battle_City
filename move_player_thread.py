@@ -19,7 +19,7 @@ class MovePlayerThread(QThread):
         super(MovePlayerThread, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
         self.parent_widget.speed_up_signal.connect(self.speedUp)
-        self.speed = 0.08
+        self.speed = 0.06
         if self.parent_widget.socket is not None:
             self.socket = self.parent_widget.socket
         else:
