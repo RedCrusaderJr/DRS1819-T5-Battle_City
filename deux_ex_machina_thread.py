@@ -22,7 +22,7 @@ class DeuxExMachinaThread(QThread):
     def readPipe(self):
         element = self.parent_widget.in_pipe.recv()
         self.parent_widget.mutex.lock()
-        print(f"Recv: {element[0]} {element[1]} {element[2]}")
+        #print(f"Recv: {element[0]} {element[1]} {element[2]}")
         width = element[0]
         height = element[1]
         force = element[2]
@@ -34,11 +34,11 @@ class DeuxExMachinaThread(QThread):
             self.parent_widget.setShapeAt(width, height, force)
             self.parent_widget.force_x = width
             self.parent_widget.force_y = height
-            print("Postavio")
+            #print("Postavio")
             self.parent_widget.mutex.unlock()
             time.sleep(2)
             self.parent_widget.mutex.lock()
             self.parent_widget.setShapeAt(self.parent_widget.force_x, self.parent_widget.force_y, ElementType.NONE)
-        else:
-            print("Zauzeto polje")
+        #else:
+            #print("Zauzeto polje")
         self.parent_widget.mutex.unlock()

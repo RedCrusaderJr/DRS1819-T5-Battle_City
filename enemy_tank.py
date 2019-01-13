@@ -41,7 +41,6 @@ class EnemyTank:
                 is_bullet_fired = True
 
             self.active_bullet = Bullet(BulletType.ENEMY, bullet_x, bullet_y, self.direction, self)
-            #print(f"fireBullet({self}): bullet: {self.active_bullet} fired")
 
         return is_bullet_fired
 
