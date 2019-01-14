@@ -9,7 +9,6 @@ from main_window_layout import MainWindowLayout
 
 
 class BattleCity(QMainWindow):
-    #restart_game_signal = pyqtSignal(int)
     restart_game_signal = pyqtSignal(int, object, object, int)
 
     def __init__(self):
@@ -292,14 +291,14 @@ class BattleCity(QMainWindow):
         self.mode = mode
 
         if self.main_window_layout is None:
-            print("is none")
             self.main_window_layout = MainWindowLayout(self,
                                                        self.mode,
                                                        (self.board_width, self.board_height),
                                                        (self.stat_width, self.stat_height),
                                                        self.stat_font_size)
         else:
-            print("is NOT none")
+            self.main_window_layout.game_board_frame.hide()
+            self.main_window_layout.stat_frame.hide()
             self.restart_game_signal.emit(self.mode,
                                           (self.board_width, self.board_height),
                                           (self.stat_width, self.stat_height),
