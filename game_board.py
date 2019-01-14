@@ -512,8 +512,8 @@ class GameBoard(QFrame):
         if level_nr == 0:
             filename = "levels/game_over.txt"
         else:
-            #filename = "levels/"+str(level_nr)+".txt"
-            filename = "levels/9.txt"
+            filename = "levels/"+str(level_nr)+".txt"
+            #filename = "levels/9.txt"
 
         if not os.path.isfile(filename):
             return False
@@ -580,7 +580,7 @@ class GameBoard(QFrame):
 
         #TODO: SIGNAL to main_window: advance
         #TODO BUG: sleep duzi od 0.5, deux_ex_machina
-        time.sleep(5)
+        time.sleep(0.2)
         # TODO: SIGNAL to main_window: sleep over
 
     def setPlayersForNextLevel(self):

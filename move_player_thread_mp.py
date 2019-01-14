@@ -135,6 +135,7 @@ class MovePlayerThreadMP(QThread):
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y,
                                               ElementType.NONE)
                 self.parent_widget.bullet_list.remove(other_bullet)
+                other_bullet.bullet_owner.active_bullet = None
             else:
                 print("Move enemy thread: bulletImpactOnFire(): other_bullet is None")
 

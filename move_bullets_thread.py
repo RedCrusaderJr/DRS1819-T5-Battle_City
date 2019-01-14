@@ -86,7 +86,6 @@ class MoveBulletsThread(QThread):
             other_bullet = self.findBulletAt(new_x, new_y)
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
             if other_bullet is not None:
-                #self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y, ElementType.NONE) #mozda setShape na new_x, new_y?
                 bullets_to_be_removed.append(other_bullet)
                 #("find other bullet!")
             #else:
@@ -102,24 +101,20 @@ class MoveBulletsThread(QThread):
             if gb_player.lives > 0:
                 self.parent_widget.setPlayerToStartingPosition(gb_player.x, gb_player.y, gb_player)
                 if gb_player.player_type == PlayerType.PLAYER_1:
-                    #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
                 elif gb_player.player_type == PlayerType.PLAYER_2:
-                    #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
             else:
                 #print(f"game over for {next_shape}")
                 self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
                 if next_shape is ElementType.PLAYER1:
                     self.parent_widget.change_lives_signal.emit(1, gb_player.lives)
-                    #TODO:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.dead_player_signal.emit(1)
                     if self.parent_widget.mode == 1 or self.parent_widget.player_2.lives <= 0:
                         self.gameOver()
 
                 elif next_shape is ElementType.PLAYER2:
                     self.parent_widget.change_lives_signal.emit(2, gb_player.lives)
-                    #TODO: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     self.dead_player_signal.emit(2)
                     if self.parent_widget.player_1.lives <= 0:
                         self.gameOver()
@@ -144,18 +139,13 @@ class MoveBulletsThread(QThread):
         self.bullets_move_signal.emit(bullets_with_new_position,
                                       bullets_to_be_removed,
                                       enemies_to_be_removed)
-        #TODO: SEND BULLETS_MOVE
-        if self.parent_widget.socket is not None:
-            data = pickle.dumps(("BULLETS_MOVED", (bullets_with_new_position, bullets_to_be_removed, enemies_to_be_removed)))
-            with self.socket:
-                self.socket.sendall(data)
+
     # endregion
 
     def gameOver(self):
         self.parent_widget.clearBoard()
         self.parent_widget.move_enemy_thread.cancel()
         self.parent_widget.player_1.lives = 0
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ubaci enum
         if self.parent_widget.mode == 2:
             self.parent_widget.player_2.lives = 0
 

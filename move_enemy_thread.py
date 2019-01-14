@@ -203,19 +203,10 @@ class MoveEnemyThread(QThread):
 
     def bulletFiredSignal(self, bullet, transform):
         self.bullet_fired_signal.emit(bullet, transform)
-        #TODO: SEND BULLET_FIRED
-        if self.parent_widget.socket is not None:
-            data = pickle.dumps(("BULLET_FIRED", (bullet, transform)))
-            with self.socket:
-                self.socket.sendall(data)
 
     def bulletImpactSignal(self, bullets_to_be_removed, enemies_to_be_removed):
         self.bullet_impact_signal.emit([], bullets_to_be_removed, enemies_to_be_removed)
-        #TODO: SEND BULLET_IMPACT
-        if self.parent_widget.socket is not None:
-            data = pickle.dumps(("BULLET_IMPACT", ([], bullets_to_be_removed, enemies_to_be_removed)))
-            with self.socket:
-                self.socket.sendall(data)
+
     #endregion
 
     def chooseRandomEnemy(self):
