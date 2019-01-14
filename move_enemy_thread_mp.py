@@ -13,7 +13,7 @@ class MoveEnemyThreadMP(QThread):
     def __init__(self, parentQWidget = None):
         super(MoveEnemyThreadMP, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
-        self.speed = 0.25
+        self.speed = 0.18
         self.was_canceled = False
         self.iterator = 0
         self.chosen_enemy = None

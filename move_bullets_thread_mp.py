@@ -15,7 +15,7 @@ class MoveBulletsThreadMP(QThread):
     def __init__(self, parentQWidget=None):
         super(MoveBulletsThreadMP, self).__init__(parentQWidget)
         self.parent_widget = parentQWidget
-        self.speed = 0.07
+        self.speed = 0.05
         self.was_canceled = False
         self.parent_widget.speed_up_signal.connect(self.speedUp)
 
@@ -32,6 +32,7 @@ class MoveBulletsThreadMP(QThread):
     def speedUp(self):
         if self.speed - 0.01 > 0.02:
             self.speed -= 0.01
+
 
     def moveBullets(self):
         bullets_to_be_removed = []

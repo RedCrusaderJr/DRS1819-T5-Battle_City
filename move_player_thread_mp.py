@@ -141,21 +141,22 @@ class MovePlayerThreadMP(QThread):
 
         elif (next_shape == ElementType.ENEMY or ElementType.ENEMY_UP <= next_shape <= ElementType.ENEMY_LEFT) and bullet.type == BulletType.FRIEND:
             enemy_to_be_removed = self.parent_widget.findEnemyAt(new_x, new_y)
-            self.parent_widget.setShapeAt(enemy_to_be_removed.x, enemy_to_be_removed.y, ElementType.NONE)
+            if enemy_to_be_removed is not None:
+                self.parent_widget.setShapeAt(enemy_to_be_removed.x, enemy_to_be_removed.y, ElementType.NONE)
 
-            self.parent_widget.enemy_list.remove(enemy_to_be_removed)
-            self.parent_widget.num_of_all_enemies -= 1
-            self.send_status_update(num_of_enemies=self.parent_widget.num_of_all_enemies)
-            if self.parent_widget.num_of_all_enemies > 0:
-                while (True):
-                    rand_x = randint(0, self.parent_widget.BoardWidth)
-                    if self.parent_widget.getShapeType(rand_x, 0) == ElementType.NONE:
-                        break
+                self.parent_widget.enemy_list.remove(enemy_to_be_removed)
+                self.parent_widget.num_of_all_enemies -= 1
+                self.send_status_update(num_of_enemies=self.parent_widget.num_of_all_enemies)
+                if self.parent_widget.num_of_all_enemies > 0:
+                    while (True):
+                        rand_x = randint(0, self.parent_widget.BoardWidth)
+                        if self.parent_widget.getShapeType(rand_x, 0) == ElementType.NONE:
+                            break
 
-                self.parent_widget.enemy_list.append(EnemyTank(rand_x))
-                self.parent_widget.setShapeAt(rand_x, 0, ElementType.ENEMY_DOWN)
-            elif self.parent_widget.num_of_all_enemies == -3:
-                self.parent_widget.advanceToNextLevel()
+                    self.parent_widget.enemy_list.append(EnemyTank(rand_x))
+                    self.parent_widget.setShapeAt(rand_x, 0, ElementType.ENEMY_DOWN)
+                elif self.parent_widget.num_of_all_enemies == -3:
+                    self.parent_widget.advanceToNextLevel()
         bullet.bullet_owner.active_bullet = None
         #self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
 
