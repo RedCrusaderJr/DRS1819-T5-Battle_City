@@ -47,7 +47,7 @@ class GameBoard(QFrame):
 
         self.socket = None
         if mode is GameMode.MULTIPLAYER_ONLINE_HOST or mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
-            self.communnication = Communication(mode)
+            self.communnication = Communication(mode, 50005)
             if self.communnication.socket is not None:
                 self.socket = self.communnication.socket
                 self.conn = self.communnication.conn

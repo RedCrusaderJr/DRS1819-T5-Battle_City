@@ -23,10 +23,10 @@ class GameServerFrame(QFrame):
     mutex = QMutex()
     speed_up_signal = pyqtSignal()
 
-    def __init__(self, parent):
+    def __init__(self, parent, port):
         super().__init__(parent)
-
-        self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST)
+        self.parent_widget = parent
+        self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST, port)
 
         self.board = []
 
@@ -98,7 +98,7 @@ class GameServerFrame(QFrame):
 
     def sendWinner(self, player):
         self.loadLevel(-1)
-        data = pickle.dumps((str("WINNER"), self.board), -1)
+        data = pickle.dumps((str("WINNER"), (self.board, self.parent_widget.port)), -1)
         if player == 1:
             self.send_msg(self.communication.conn1, data)
             self.communication.conn1.shutdown(socket.SHUT_RDWR)
@@ -213,6 +213,9 @@ class GameServerFrame(QFrame):
             self.sendWinner(1)
 
     def advanceToNextLevel(self):
+        for bullet in self.bullet_list:
+            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+
         self.bullet_list = []
         self.player_2.active_bullet = None
         self.player_1.active_bullet = None

@@ -5,6 +5,9 @@ from PyQt5.QtGui import QTransform, QPainter
 from bullet import  Bullet
 from tank import Tank
 import struct
+import socket
+from communication import Communication
+
 
 class CommunicationThread(QThread):
     player_move_signal = pyqtSignal(Tank, QTransform)
@@ -77,9 +80,14 @@ class CommunicationThread(QThread):
 
             elif id == "WINNER":
                 self.parent_widget.clearBoard()
-                self.parent_widget.board = data
+                self.parent_widget.board = data[0]
                 self.update_signal.emit()
                 print("I WON")
+                self.parent_widget.mutex.unlock()
+                self.parent_widget.communnication.socket.shutdown(socket.SHUT_RDWR)
+                self.parent_widget.communnication = Communication(GameMode.MULTIPLAYER_ONLINE_CLIENT, data[1])
+                self.parent_widget.socket = self.parent_widget.communnication.socket
+                self.parent_widget.mutex.lock()
 
             elif id == "LOSER":
                 self.parent_widget.clearBoard()
@@ -103,6 +111,11 @@ class CommunicationThread(QThread):
 
                 if data[1] is not None:
                     self.parent_widget.change_level_signal.emit()
+
+            elif id == "PORT_INIT":
+                self.parent_widget.communnication.socket.shutdown(socket.SHUT_RDWR)
+                self.parent_widget.communnication = Communication(GameMode.MULTIPLAYER_ONLINE_CLIENT, data)
+                self.parent_widget.socket = self.parent_widget.communnication.socket
 
         self.parent_widget.mutex.unlock()
 
