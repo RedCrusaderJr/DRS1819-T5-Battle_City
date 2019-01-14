@@ -11,6 +11,7 @@ class StatFrame(QFrame):
         self.game_board.change_lives_signal.connect(self.changeLives)
         self.game_board.change_level_signal.connect(self.changeLevel)
         self.game_board.change_enemies_left_signal.connect(self.changeEnemiesLeft)
+        self.game_board.restart_levels_signal.connect(self.restart_levels)
 
         self.layout = QVBoxLayout()
 
@@ -48,6 +49,10 @@ class StatFrame(QFrame):
     def changeLevel(self):
         self.level_num += 1
         self.level_num_label.setText("Level number: " + str(self.level_num))
+
+    def restart_levels(self):
+        self.level_num = 0
+        self.changeLevel()
 
     def changeEnemiesLeft(self, num_of_enemies):
         self.enemies_left = num_of_enemies + 3

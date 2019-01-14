@@ -27,6 +27,7 @@ class GameBoard(QFrame):
     speed_up_signal = pyqtSignal()
     game_over_tool_bar_signal = pyqtSignal()
     game_over_signal = pyqtSignal()
+    restart_levels_signal = pyqtSignal()
 
     def __init__(self, parent, mode):
         super(GameBoard, self).__init__(parent)

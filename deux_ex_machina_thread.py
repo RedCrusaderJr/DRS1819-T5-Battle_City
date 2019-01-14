@@ -65,7 +65,7 @@ class DeuxExMachinaThread(QThread):
             return
 
     def sendBoard(self):
-        id = "GAMEBOARD_INIT"
+        id = "LEVEL_GAMEBOARD_INIT"
         data = pickle.dumps((id, self.parent_widget.board), -1)
 
         self.send_msg(self.parent_widget.communication.conn1, data)

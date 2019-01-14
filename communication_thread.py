@@ -64,6 +64,15 @@ class CommunicationThread(QThread):
                 self.parent_widget.clearBoard()
                 self.parent_widget.board = data
                 self.update_signal.emit()
+                self.parent_widget.change_enemies_left_signal.emit(3)
+                self.parent_widget.change_lives_signal.emit(1, 3)
+                self.parent_widget.change_lives_signal.emit(2, 3)
+                self.parent_widget.restart_levels_signal.emit()
+
+            elif id == "LEVEL_GAMEBOARD_INIT":
+                self.parent_widget.clearBoard()
+                self.parent_widget.board = data
+                self.update_signal.emit()
 
             elif id == "UPDATE_ENEMY":
                 self.parent_widget.board = data
@@ -116,6 +125,10 @@ class CommunicationThread(QThread):
                 self.parent_widget.communnication.socket.shutdown(socket.SHUT_RDWR)
                 self.parent_widget.communnication = Communication(GameMode.MULTIPLAYER_ONLINE_CLIENT, data)
                 self.parent_widget.socket = self.parent_widget.communnication.socket
+
+            elif id == "ABSOLUTE_WINNER":
+                self.parent_widget.board = data
+                self.update_signal.emit()
 
         self.parent_widget.mutex.unlock()
 

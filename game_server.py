@@ -16,13 +16,13 @@ class GameServerWidget(QWidget):
         if self.mode == 1: #multiplayer
             self.game_server_frame1 = GameServerFrame(self, 50005)
         else:
-            self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST, 50005)
+            self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST, 50005, 2)
 
             self.game_server_frame1 = GameServerFrame(self, self.port)
             self.port += 1
             self.game_server_frame2 = GameServerFrame(self, self.port)
             self.port += 1
-            self.game_server_frame3 = GameServerFrame(self, self.port)
+            self.game_server_frame3 = GameServerFrame(self, self.port, True)
 
 
 

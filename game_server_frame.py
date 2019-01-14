@@ -23,11 +23,11 @@ class GameServerFrame(QFrame):
     mutex = QMutex()
     speed_up_signal = pyqtSignal()
 
-    def __init__(self, parent, port):
+    def __init__(self, parent, port, final = False):
         super().__init__(parent)
         self.parent_widget = parent
         self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST, port)
-
+        self.final = final
         self.board = []
 
         self.initGameBoard()
@@ -48,7 +48,7 @@ class GameServerFrame(QFrame):
         self.deux_ex_machina_thread.start()
 
     def initGameBoard(self):
-        self.num_of_all_enemies = 7
+        self.num_of_all_enemies = 3
         self.num_of_enemies_per_level = 4
         self.current_level = 1
         self.force_x = None
@@ -75,7 +75,7 @@ class GameServerFrame(QFrame):
         for i in range(self.num_of_enemies_per_level):
             self.enemy_list.append(EnemyTank(self.random_values[i]))
             self.setShapeAt(self.enemy_list[i].x, self.enemy_list[i].y, ElementType.ENEMY)
-        self.sendBoard()
+        self.sendBoard(True)
 
     def send_msg(self, sock, msg):
         # Prefix each message with a 4-byte length (network byte order)
@@ -83,9 +83,14 @@ class GameServerFrame(QFrame):
         msg = struct.pack('>I', len(msg)) + msg
         sock.sendall(msg)
 
-    def sendBoard(self):
-        id = "GAMEBOARD_INIT"
-        data = pickle.dumps((id, self.board), -1)
+    def sendBoard(self, begin = False):
+        if begin:
+            id = "GAMEBOARD_INIT"
+
+        else:
+            id = "LEVEL_GAMEBOARD_INIT"
+
+        data = pickle.dumps((id, self.board), -1) #board, enemies_left, pl1_lives, pl2_lives, level
 
         self.send_msg(self.communication.conn1, data)
         self.send_msg(self.communication.conn2, data)
@@ -97,16 +102,28 @@ class GameServerFrame(QFrame):
         self.send_msg(self.communication.conn2, data)
 
     def sendWinner(self, player):
-        self.loadLevel(-1)
-        data = pickle.dumps((str("WINNER"), (self.board, self.parent_widget.port)), -1)
-        if player == 1:
-            self.send_msg(self.communication.conn1, data)
-            self.communication.conn1.shutdown(socket.SHUT_RDWR)
-            self.communication.conn1.close()
+        if not self.final and self.parent_widget.mode == 2:
+            self.loadLevel(-1)
+            data = pickle.dumps((str("WINNER"), (self.board, self.parent_widget.port)), -1)
+            if player == 1:
+                self.send_msg(self.communication.conn1, data)
+                self.communication.conn1.shutdown(socket.SHUT_RDWR)
+                self.communication.conn1.close()
+            else:
+                self.send_msg(self.communication.conn2, data)
+                self.communication.conn2.shutdown(socket.SHUT_RDWR)
+                self.communication.conn2.close()
         else:
-            self.send_msg(self.communication.conn2, data)
-            self.communication.conn2.shutdown(socket.SHUT_RDWR)
-            self.communication.conn2.close()
+            self.loadLevel(-3)
+            data = pickle.dumps((str("ABSOLUTE_WINNER"), self.board), -1)
+            if player == 1:
+                self.send_msg(self.communication.conn1, data)
+                self.communication.conn1.shutdown(socket.SHUT_RDWR)
+                self.communication.conn1.close()
+            else:
+                self.send_msg(self.communication.conn2, data)
+                self.communication.conn2.shutdown(socket.SHUT_RDWR)
+                self.communication.conn2.close()
 
 
     def sendLoser(self, player):
@@ -146,6 +163,8 @@ class GameServerFrame(QFrame):
             filename = "levels/winner.txt"
         elif level_nr == -2:
             filename = "levels/loser.txt"
+        elif level_nr == -3:
+            filename = "levels/trophy.txt"
         else:
             filename = "levels/"+str(level_nr)+".txt"
 
@@ -234,7 +253,7 @@ class GameServerFrame(QFrame):
 
         self.enemies_increaser += 1
 
-        self.num_of_all_enemies = 7 + self.enemies_increaser
+        self.num_of_all_enemies = 3 + self.enemies_increaser
 
         self.speed_up_signal.emit()
 
