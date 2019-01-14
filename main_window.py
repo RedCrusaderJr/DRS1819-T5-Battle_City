@@ -36,7 +36,7 @@ class BattleCity(QMainWindow):
         self.setObjectName("main_window")
 
         #TODO:
-        self.resize(self.main_window_width,self.main_window_height)
+        self.resize(self.main_window_width, self.main_window_height)
         self.setFixedSize(self.size());
 
         self.status_bar = self.statusBar()

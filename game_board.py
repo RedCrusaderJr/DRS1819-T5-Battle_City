@@ -61,9 +61,9 @@ class GameBoard(QFrame):
 
     #region INIT_METHODS
     def initGameBoard(self):
-        self.num_of_all_enemies = 7
+        self.num_of_all_enemies = 3
         self.num_of_enemies_per_level = 4
-        self.current_level = 9
+        self.current_level = 1
         self.force_x = None
         self.force_y = None
         self.enemies_increaser = 0
@@ -570,7 +570,7 @@ class GameBoard(QFrame):
 
         self.force_y = None
         self.force_x = None
-        self.num_of_all_enemies = 7 + self.enemies_increaser
+        self.num_of_all_enemies = 3 + self.enemies_increaser
         self.current_level += 1
         self.setPlayersForNextLevel()
         self.loadLevel(self.current_level)
