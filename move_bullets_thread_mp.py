@@ -124,7 +124,7 @@ class MoveBulletsThreadMP(QThread):
 
             gb_player.lives -= 1
             if gb_player.player_type == PlayerType.PLAYER_1:
-                self.send_status_update(player_1_life=gb_player.lives)
+                self.send_status_update(player_1_life=gb_player.lives) #slanje zahteva na klijent za osvezavanje stat framea
             elif gb_player.player_type == PlayerType.PLAYER_2:
                 self.send_status_update(player_2_life=gb_player.lives)
 

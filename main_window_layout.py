@@ -63,7 +63,6 @@ class MainWindowLayout(QWidget):
         self.stat_frame.setObjectName("stat_frame")
         self.stat_frame.show()
 
-    #def restartGame(self, mode=None):
     def restartGame(self, mode=None, board_size=None, stat_size=None, stat_font_size=None):
         if mode is None:
             mode = self.mode
@@ -105,7 +104,6 @@ class MainWindowLayout(QWidget):
         self.initGameBoardFrame()
         self.initStatFrame()
 
-        #self.h_layout = QHBoxLayout(self)
         self.h_layout.addWidget(self.game_board_frame)
         self.h_layout.addWidget(self.stat_frame)
         self.setLayout(self.h_layout)

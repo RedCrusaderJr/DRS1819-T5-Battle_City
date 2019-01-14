@@ -240,7 +240,7 @@ class GameServerFrame(QFrame):
         self.player_1.active_bullet = None
 
         self.current_level += 1
-        if (self.current_level > 8):
+        if (self.current_level > 8): #TODO level dart wader
             self.current_level = 1
         self.loadLevel(self.current_level)
 
@@ -259,9 +259,7 @@ class GameServerFrame(QFrame):
 
         self.sendBoard()
 
-        self.updateLevel()
-
-        #TODO FORCE
+        self.updateLevel() # za statframe
 
 
 

@@ -6,6 +6,7 @@ from stat_frame import StatFrame
 import sys
 from enums import GameMode
 from main_window_layout import MainWindowLayout
+from pygame import mixer
 
 
 class BattleCity(QMainWindow):
@@ -17,6 +18,17 @@ class BattleCity(QMainWindow):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon('./images/tank_icon.png'))
         self.setWindowTitle("Battle City")
+
+        mixer.init()
+        self.channel_0 = mixer.Channel(0)
+        self.channel_1 = mixer.Channel(1)
+        self.channel_2 = mixer.Channel(2)
+        self.channel_3 = mixer.Channel(3)
+
+        self.gameplay_soundtrack = mixer.Sound("./sounds/gameplay_sountrack.ogg")
+        self.losing_sound = mixer.Sound("./sounds/losing_sound.ogg")
+        self.bullet_fired_sound = mixer.Sound("./sounds/fire_sound.wav")
+        self.bullet_impact_sound = mixer.Sound("./sounds/impact_sound.wav")
 
         self.main_window_width = 1600
         self.main_window_height = 900
@@ -35,9 +47,8 @@ class BattleCity(QMainWindow):
     def initUI(self):
         self.setObjectName("main_window")
 
-        #TODO:
         self.resize(self.main_window_width, self.main_window_height)
-        self.setFixedSize(self.size());
+        self.setFixedSize(self.size())
 
         self.status_bar = self.statusBar()
         self.status_bar.setObjectName("status_bar")
@@ -56,10 +67,6 @@ class BattleCity(QMainWindow):
         self.menu_bar.start_game.multi_act = QAction("Multiplayer mode", self)
         self.menu_bar.start_game.multi_act.triggered.connect(self.toggleMulti)
         self.menu_bar.start_game.addAction(self.menu_bar.start_game.multi_act)
-
-        self.menu_bar.start_game.online_host_act = QAction("Online multiplayer - HOST", self)
-        self.menu_bar.start_game.online_host_act.triggered.connect(self.toggleOnlineHost)
-        self.menu_bar.start_game.addAction(self.menu_bar.start_game.online_host_act)
 
         self.menu_bar.start_game.online_client_act = QAction("Online multiplayer - CLIENT", self)
         self.menu_bar.start_game.online_client_act.triggered.connect(self.toggleOnlineClient)
@@ -115,18 +122,12 @@ class BattleCity(QMainWindow):
         self.status_bar.showMessage("MODE: MULTIPLAYER")
         self.startNewGame(GameMode.MULTIPLAYER_OFFLINE)
 
-    def toggleOnlineHost(self, mode):
-        self.status_bar.showMessage("MODE: ONLINE_HOST")
-        self.startNewGame(GameMode.MULTIPLAYER_ONLINE_HOST)
-
     def toggleOnlineClient(self, mode):
         self.status_bar.showMessage("MODE: ONLINE_CLIENT")
         self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
     def toggleEndGame(self, mode):
         print("toggleEndGame")
-        #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
-        #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
         self.endGame()
 
     def toggleRestartGame(self, mode):
@@ -304,22 +305,34 @@ class BattleCity(QMainWindow):
                                           (self.stat_width, self.stat_height),
                                           self.stat_font_size)
 
+        self.main_window_layout.game_board_frame.fire_sound_signal.connect(self.bulletFiredSound)
+        self.main_window_layout.game_board_frame.impact_sound_signal.connect(self.bulletImpactSound)
 
         self.setCentralWidget(self.main_window_layout)
 
         self.menu_bar.start_game.setEnabled(False)
         self.menu_bar.theme_menu.setEnabled(False)
         self.menu_bar.window_size_menu.setEnabled(False)
-        self.menu_bar.restart_game_act.setEnabled(True)
-        self.menu_bar.end_game_act.setEnabled(True)
+
+        if self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            self.menu_bar.restart_game_act.setEnabled(False)
+            self.menu_bar.end_game_act.setEnabled(False)
+        else:
+            self.menu_bar.restart_game_act.setEnabled(True)
+            self.menu_bar.end_game_act.setEnabled(True)
 
         self.show()
+
+        self.channel_0.play(self.gameplay_soundtrack, loops=-1)
 
     def gameOver(self):
         self.menu_bar.start_game.setEnabled(True)
         self.menu_bar.theme_menu.setEnabled(True)
         self.menu_bar.window_size_menu.setEnabled(True)
         self.menu_bar.end_game_act.setEnabled(False)
+
+        self.channel_0.stop()
+        self.channel_1.play(self.losing_sound)
 
     def restartGame(self):
         print("restartGame")
@@ -340,6 +353,9 @@ class BattleCity(QMainWindow):
                                           (self.board_width, self.board_height),
                                           (self.stat_width, self.stat_height),
                                           self.stat_font_size)
+            self.channel_0.play(self.gameplay_soundtrack, loops=-1)
+            self.main_window_layout.game_board_frame.fire_sound_signal.connect(self.bulletFiredSound)
+            self.main_window_layout.game_board_frame.impact_sound_signal.connect(self.bulletImpactSound)
 
     def endGame(self):
         print("endGame")
@@ -354,6 +370,14 @@ class BattleCity(QMainWindow):
             self.menu_bar.window_size_menu.setEnabled(True)
             self.menu_bar.restart_game_act.setEnabled(True)
             self.menu_bar.end_game_act.setEnabled(False)
+
+        self.channel_0.stop()
+
+    def bulletFiredSound(self):
+        self.channel_2.play(self.bullet_fired_sound)
+
+    def bulletImpactSound(self):
+        self.channel_3.play(self.bullet_impact_sound)
 
 if __name__ == "__main__":
     app = QApplication([])

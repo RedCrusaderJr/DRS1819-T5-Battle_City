@@ -37,10 +37,7 @@ class MoveEnemyThreadMP(QThread):
             self.speed -= 0.03
 
     def moveEnemy(self):
-        #enemies_with_new_position = []
-        #enemies_with_new_orientation = []
         enemies_to_be_removed = []
-        #bullets_to_be_removed = []
 
         for enemy in self.parent_widget.enemy_list:
             new_x = enemy.x
@@ -84,11 +81,8 @@ class MoveEnemyThreadMP(QThread):
 
 
                 if not is_bullet_collision:
-                    #transform = QTransform()
-                    #transform.rotate(Helper.rotationFunction(enemy.direction, new_orientation))
                     enemy.direction = new_orientation
                     self.parent_widget.setShapeAt(enemy.x, enemy.y, Helper.enumFromOrientationEnemy(new_orientation))
-                    #enemies_with_new_orientation.append((enemy, transform))
             else:
                 self.parent_widget.setShapeAt(enemy.x, enemy.y, ElementType.NONE)
                 enemy.x = new_x
@@ -99,7 +93,7 @@ class MoveEnemyThreadMP(QThread):
             self.parent_widget.enemy_list.remove(elemnt)
             self.parent_widget.num_of_all_enemies -= 1
             self.send_status_update(enemies_left=self.parent_widget.num_of_all_enemies)
-            if self.parent_widget.num_of_all_enemies > 0:
+            if self.parent_widget.num_of_all_enemies > 0: #dodavanje novog enemyja
                 while (True):
                     rand_x = randint(0, self.parent_widget.BoardWidth)
                     if self.parent_widget.getShapeType(rand_x, 0) == ElementType.NONE:
@@ -192,15 +186,9 @@ class MoveEnemyThreadMP(QThread):
             return
 
     def sendUpdatedEnemies(self):
-        #id = "UPDATE_ENEMY"
 
         data = pickle.dumps((str("UPDATE_ENEMY"), self.parent_widget.board), -1)
         data2 = pickle.dumps((str("UPDATE_ENEMY"), self.parent_widget.board), -1)
-
-        #print(len(data))
-
-        #self.parent_widget.communication.conn1.send(data)
-        #self.parent_widget.communication.conn2.send(data2)
 
         self.send_msg(self.parent_widget.communication.conn1, data)
         self.send_msg(self.parent_widget.communication.conn2, data2)

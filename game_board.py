@@ -28,6 +28,8 @@ class GameBoard(QFrame):
     game_over_tool_bar_signal = pyqtSignal()
     game_over_signal = pyqtSignal()
     restart_levels_signal = pyqtSignal()
+    fire_sound_signal = pyqtSignal()
+    impact_sound_signal = pyqtSignal()
 
     def __init__(self, parent, mode):
         super(GameBoard, self).__init__(parent)
@@ -564,7 +566,7 @@ class GameBoard(QFrame):
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
             self.enemy_dictionary[enemy].show()
 
-        if self.current_level >= 9:
+        if self.current_level >= 9: #TODO
             self.current_level = 0
 
         self.enemies_increaser += 1
@@ -801,18 +803,16 @@ class GameBoard(QFrame):
         bullet_label.orientation = bullet.orientation
         bullet_label.show()
 
+        if bullet.type == BulletType.FRIEND:
+            self.fire_sound_signal.emit()
+
+
     def bulletMoved(self, bullets_with_new_posiotion, bullets_to_be_removed, enemies_to_be_removed):
 
         for bullet in bullets_with_new_posiotion:
             if bullet in self.bullet_dictionary:
                 bullet_label = self.bullet_dictionary[bullet]
                 self.setGameBoardLabelGeometry(bullet_label, bullet.x, bullet.y)
-            #else:
-                #print(f"bullet({bullet}) from bullets_with_new_posiotion is not in bullet_dictionary")
-
-                #if pocetna slicica:
-                    #pix = self.bullet_dictionary[bullet].pixmap()
-                    #self.bullet_dictionary[bullet].setPixmap(pix)
 
         self.mutex.lock()
         for bullet in bullets_to_be_removed:
@@ -821,8 +821,6 @@ class GameBoard(QFrame):
                 bullet_label = self.bullet_dictionary[bullet]
                 bullet_label.hide()
                 del self.bullet_dictionary[bullet]
-            #else:
-                #print(f"bullet({bullet}) from bullets_to_be_removed is not in bullet_dictionary")
 
         for enemy in enemies_to_be_removed:
             if enemy in self.enemy_dictionary:
@@ -838,8 +836,6 @@ class GameBoard(QFrame):
                 elif self.num_of_all_enemies == -3:
                     #print(f"BulletMoved(){self.num_of_all_enemies}")
                     self.advanceToNextLevel()
-            #else:
-                #print(f"enemy({enemy}) from enemies_to_be_removed is not in enemy_dictionary")
         self.mutex.unlock()
         self.update()
 

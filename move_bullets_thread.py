@@ -133,6 +133,8 @@ class MoveBulletsThread(QThread):
 
         self.parent_widget.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
         bullets_to_be_removed.append(bullet)
+        if bullet.type == BulletType.FRIEND:
+            self.parent_widget.impact_sound_signal.emit()
 
     # region SIGNAL_EMITS
     def bulletsMoveSignal(self, bullets_with_new_position, bullets_to_be_removed, enemies_to_be_removed):

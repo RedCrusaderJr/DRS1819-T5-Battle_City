@@ -55,6 +55,7 @@ class MovePlayerThreadMP(QThread):
             if not message or len(message) < 1024:
                 break
             self.parent_widget.mutex.unlock()
+            
         if not self.is_freezed:
             if text == "UP":
                 new_y -= 1

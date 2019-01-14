@@ -218,7 +218,7 @@ class MovePlayerThread(QThread):
         bullet.bullet_owner.active_bullet = None
 
         self.bulletImpactSignal(bullets_to_be_removed, enemies_to_be_removed)
-
+        self.parent_widget.impact_sound_signal.emit()
 
     # region SIGNAL_EMITS
     def playerMoveSignal(self, transform):

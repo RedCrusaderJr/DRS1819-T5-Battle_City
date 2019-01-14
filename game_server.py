@@ -36,10 +36,6 @@ class GameServer(QMainWindow):
 
 
 
-
-
-
-
     def initUI(self):
         self.menu_bar = self.menuBar()
         self.menu_bar.start_game = self.menu_bar.addMenu("&Start Game")

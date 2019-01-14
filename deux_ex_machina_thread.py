@@ -47,7 +47,7 @@ class DeuxExMachinaThread(QThread):
             #TODO: PROVERI STA JE TU
             shape = self.parent_widget.getShapeType(width, height)
 
-            if (shape == ElementType.FREEZE) or (shape == ElementType.LIFE):
+            if (shape == ElementType.FREEZE) or (shape == ElementType.LIFE):    #player pokupio
                 self.parent_widget.setShapeAt(width, height, ElementType.NONE)
                 if self.multiplayer:
                     self.sendBoard()
