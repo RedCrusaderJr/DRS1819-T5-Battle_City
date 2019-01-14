@@ -319,6 +319,7 @@ class GameBoard(QFrame):
             self.deux_ex_machina_thread.start()
 
         elif self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            self.communnication_thread.update_signal.connect(self.update)
             self.communnication_thread.start()
             #self.move_player_1_thread.start()
             #self.move_player_2_thread.start()

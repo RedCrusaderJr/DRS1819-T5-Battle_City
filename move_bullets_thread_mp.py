@@ -17,6 +17,7 @@ class MoveBulletsThreadMP(QThread):
         self.parent_widget = parentQWidget
         self.speed = 0.07
         self.was_canceled = False
+        self.parent_widget.speed_up_signal.connect(self.speedUp)
 
     def run(self):
         while not self.was_canceled:
@@ -42,13 +43,13 @@ class MoveBulletsThreadMP(QThread):
             new_x = bullet.x
             new_y = bullet.y
 
-            if bullet.orientation is Orientation.UP:
+            if bullet.orientation == Orientation.UP:
                 new_y -= 1
-            elif bullet.orientation is Orientation.RIGHT:
+            elif bullet.orientation == Orientation.RIGHT:
                 new_x += 1
-            elif bullet.orientation is Orientation.DOWN:
+            elif bullet.orientation == Orientation.DOWN:
                 new_y += 1
-            elif bullet.orientation is Orientation.LEFT:
+            elif bullet.orientation == Orientation.LEFT:
                 new_x -= 1
 
             if Helper.isCollision(self.parent_widget, new_x, new_y, ElementType.BULLET):
@@ -97,10 +98,10 @@ class MoveBulletsThreadMP(QThread):
 
         next_shape = self.parent_widget.getShapeType(new_x, new_y)
         levelChanged = False
-        if next_shape is ElementType.WALL:
+        if next_shape == ElementType.WALL:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
-        elif next_shape is ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
+        elif next_shape == ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
             other_bullet = self.findBulletAt(new_x, new_y)
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
             if other_bullet is not None:
@@ -110,11 +111,11 @@ class MoveBulletsThreadMP(QThread):
             else:
                 print("bulletImpact(): other_bullet is None")
 
-        elif (next_shape is ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT) or next_shape is ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT)) and bullet.type is BulletType.ENEMY:
-            if next_shape is ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT):
+        elif (next_shape == ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT) or next_shape == ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT)) and bullet.type == BulletType.ENEMY:
+            if next_shape == ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT):
                 gb_player = self.parent_widget.player_1
                 starting_position = self.parent_widget.player_1_starting_position
-            elif next_shape is ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT):
+            elif next_shape == ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT):
                 gb_player = self.parent_widget.player_2
                 starting_position = self.parent_widget.player_2_starting_position
 
@@ -134,7 +135,7 @@ class MoveBulletsThreadMP(QThread):
                 self.parent_widget.setShapeAt(gb_player.x, gb_player.y, Helper.enumFromOrientationPlayer(gb_player.player_type, Orientation.UP))
             else:
                 self.parent_widget.gameOver()
-        elif (next_shape is ElementType.ENEMY or (ElementType.ENEMY_UP <= next_shape <= ElementType.ENEMY_LEFT)) and bullet.type == BulletType.FRIEND:
+        elif (next_shape == ElementType.ENEMY or (ElementType.ENEMY_UP <= next_shape <= ElementType.ENEMY_LEFT)) and bullet.type == BulletType.FRIEND:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
             for enemy in self.parent_widget.enemy_list:
@@ -155,7 +156,7 @@ class MoveBulletsThreadMP(QThread):
                         levelChanged = True
                     break
 
-        elif next_shape is ElementType.BASE and bullet.type == BulletType.ENEMY:
+        elif next_shape == ElementType.BASE and bullet.type == BulletType.ENEMY:
             self.parent_widget.gameOver()
 
         if not levelChanged:

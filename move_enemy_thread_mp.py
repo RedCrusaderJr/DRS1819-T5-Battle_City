@@ -17,6 +17,7 @@ class MoveEnemyThreadMP(QThread):
         self.was_canceled = False
         self.iterator = 0
         self.chosen_enemy = None
+        self.parent_widget.speed_up_signal.connect(self.speedUp)
 
     def run(self):
         while not self.was_canceled:
@@ -45,16 +46,16 @@ class MoveEnemyThreadMP(QThread):
             new_x = enemy.x
             new_y = enemy.y
 
-            if enemy.direction is Orientation.UP:
+            if enemy.direction == Orientation.UP:
                 new_y -= 1
                 new_orientation = Orientation.RIGHT
-            elif enemy.direction is Orientation.RIGHT:
+            elif enemy.direction == Orientation.RIGHT:
                 new_x += 1
                 new_orientation = Orientation.DOWN
-            elif enemy.direction is Orientation.DOWN:
+            elif enemy.direction == Orientation.DOWN:
                 new_y += 1
                 new_orientation = Orientation.LEFT
-            elif enemy.direction is Orientation.LEFT:
+            elif enemy.direction == Orientation.LEFT:
                 new_x -= 1
                 new_orientation = Orientation.UP
 
@@ -134,10 +135,10 @@ class MoveEnemyThreadMP(QThread):
 
         next_shape = self.parent_widget.getShapeType(new_x, new_y)
 
-        if next_shape is ElementType.WALL:
+        if next_shape == ElementType.WALL:
             self.parent_widget.setShapeAt(new_x, new_y, ElementType.NONE)
 
-        elif next_shape is ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
+        elif next_shape == ElementType.BULLET or (ElementType.BULLET_UP <= next_shape <= ElementType.BULLET_LEFT):
             other_bullet = self.parent_widget.findBulletAt(new_x, new_y)
             if other_bullet is not None:
                 self.parent_widget.setShapeAt(other_bullet.x, other_bullet.y,
@@ -147,14 +148,14 @@ class MoveEnemyThreadMP(QThread):
                 print("Move enemy thread: bulletImpactOnFire(): other_bullet is None")
 
 
-        elif (next_shape is ElementType.PLAYER1 or (
-                ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT) or next_shape is ElementType.PLAYER2 or (
-                      ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT)) and bullet.type is BulletType.ENEMY:
+        elif (next_shape == ElementType.PLAYER1 or (
+                ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT) or next_shape == ElementType.PLAYER2 or (
+                      ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT)) and bullet.type == BulletType.ENEMY:
 
-            if next_shape is ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT):
+            if next_shape == ElementType.PLAYER1 or (ElementType.PLAYER1_UP <= next_shape <= ElementType.PLAYER1_LEFT):
                 gb_player = self.parent_widget.player_1
                 starting_position = self.parent_widget.player_1_starting_position
-            elif next_shape is ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT):
+            elif next_shape == ElementType.PLAYER2 or (ElementType.PLAYER2_UP <= next_shape <= ElementType.PLAYER2_LEFT):
                 gb_player = self.parent_widget.player_2
                 starting_position = self.parent_widget.player_2_starting_position
 
@@ -175,7 +176,7 @@ class MoveEnemyThreadMP(QThread):
             else:
                 self.parent_widget.gameOver()
 
-        elif next_shape is ElementType.BASE and bullet.type == BulletType.ENEMY:
+        elif next_shape == ElementType.BASE and bullet.type == BulletType.ENEMY:
             self.parent_widget.gameOver()
 
         bullet.bullet_owner.active_bullet = None

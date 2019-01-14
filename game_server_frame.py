@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QFrame
-from PyQt5.QtCore import QMutex
+from PyQt5.QtCore import QMutex, pyqtSignal
 from communication import Communication
 from enums import GameMode, ElementType, PlayerType, Orientation
 from tank import Tank
@@ -12,12 +12,16 @@ from move_bullets_thread_mp import MoveBulletsThreadMP
 from move_player_thread_mp import MovePlayerThreadMP
 import struct
 import socket
+from deux_ex_machina import DeuxExMachina
+from deux_ex_machina_thread import DeuxExMachinaThread
+from multiprocessing import Pipe
 
 
 class GameServerFrame(QFrame):
     BoardWidth = 32
     BoardHeight = 18
     mutex = QMutex()
+    speed_up_signal = pyqtSignal()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -35,6 +39,13 @@ class GameServerFrame(QFrame):
         self.move_player_thread_mp1.start()
         self.move_player_thread_mp2 = MovePlayerThreadMP(2, self)
         self.move_player_thread_mp2.start()
+        self.ex_pipe, self.in_pipe = Pipe()
+
+        self.deux_ex_machina_process = DeuxExMachina(pipe=self.ex_pipe, boardWidth=GameServerFrame.BoardWidth, boardHeight=GameServerFrame.BoardHeight)
+        self.deux_ex_machina_process.start()
+
+        self.deux_ex_machina_thread = DeuxExMachinaThread(self, True)
+        self.deux_ex_machina_thread.start()
 
     def initGameBoard(self):
         self.num_of_all_enemies = 7
@@ -222,6 +233,7 @@ class GameServerFrame(QFrame):
 
         self.num_of_all_enemies = 7 + self.enemies_increaser
 
+        self.speed_up_signal.emit()
 
         self.sendBoard()
 

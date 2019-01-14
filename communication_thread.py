@@ -11,6 +11,7 @@ class CommunicationThread(QThread):
     bullet_fired_signal = pyqtSignal(Bullet, QTransform)
     bullets_move_signal = pyqtSignal(list, list, list)
     enemy_move_signal = pyqtSignal(list, list, list)
+    update_signal = pyqtSignal()
 
     def __init__(self, parentQWidget = None):
         super(CommunicationThread, self).__init__(parentQWidget)
@@ -59,31 +60,31 @@ class CommunicationThread(QThread):
             if id == "GAMEBOARD_INIT":
                 self.parent_widget.clearBoard()
                 self.parent_widget.board = data
-                self.parent_widget.update()
+                self.update_signal.emit()
 
             elif id == "UPDATE_ENEMY":
                 self.parent_widget.board = data
-                self.parent_widget.update()
+                self.update_signal.emit()
 
             elif id == "UPDATE_BULLET":
                 self.parent_widget.board = data
-                self.parent_widget.update()
+                self.update_signal.emit()
 
             elif id == "UPDATE_PLAYERS":
                 self.parent_widget.clearBoard()
                 self.parent_widget.board = data
-                self.parent_widget.update()
+                self.update_signal.emit()
 
             elif id == "WINNER":
                 self.parent_widget.clearBoard()
                 self.parent_widget.board = data
-                self.parent_widget.update()
+                self.update_signal.emit()
                 print("I WON")
 
             elif id == "LOSER":
                 self.parent_widget.clearBoard()
                 self.parent_widget.board = data
-                self.parent_widget.update()
+                self.update_signal.emit()
                 print("I LOSE :(")
 
             elif id == "STATUS_UPDATE":
