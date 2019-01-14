@@ -1,88 +1,20 @@
 from PyQt5.QtWidgets import QWidget, QMainWindow, QApplication, QAction, QMenu, QSplitter, QHBoxLayout, QVBoxLayout, QFrame, QLabel
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtCore import Qt, QEvent, pyqtSignal
 from game_board import GameBoard
-from stat_frame import StatFrame, DecisionFrame
+from stat_frame import StatFrame
 import sys
 from enums import GameMode
+from main_window_layout import MainWindowLayout
 
-class MainWindowWidget(QWidget):
-
-    def __init__(self, parent, mode, board_size, stat_size, stat_font_size = 2):
-        super(MainWindowWidget, self).__init__(parent)
-        self.mode = mode
-        self.board_width, self.board_height = board_size
-        self.stat_width, self.stat_height = stat_size
-        self.stat_font_size = stat_font_size
-
-        self.h_layout = QHBoxLayout(self)
-
-        self.game_board_frame = GameBoard(self, self.mode)
-        self.game_board_frame.game_over_tool_bar_signal.connect(parent.gameOver)
-        self.game_board_frame.setMinimumSize(self.board_width, self.board_height)
-        self.game_board_frame.setMaximumSize(self.board_width, self.board_height)
-        self.game_board_frame.setObjectName("game_board_frame")
-        self.h_layout.addWidget(self.game_board_frame)
-
-        self.game_board_frame.restart_game_signal.connect(self.restartGame)
-
-        self.stat_frame = StatFrame(self, self.game_board_frame, self.stat_font_size)
-        self.stat_frame.setMinimumSize(self.stat_width, self.stat_height)
-        self.stat_frame.setMaximumSize(self.stat_width, self.stat_height)
-        self.stat_frame.setObjectName("stat_frame")
-        self.h_layout.addWidget(self.stat_frame)
-
-        self.setLayout(self.h_layout)
-
-        self.game_board_frame.setFocus()
-
-    def restartGame(self):
-        #TODO: da li samo hidovanje radi posao?
-        self.game_board_frame.hide()
-        self.stat_frame.hide()
-
-        self.resize(self.main_window_width, self.main_window_height)
-        self.setFixedSize(self.size());
-
-        self.h_layout = QHBoxLayout(self)
-
-        self.game_board_frame = GameBoard(self, self.mode)
-        self.game_board_frame.setMinimumSize(self.board_width, self.board_height)
-        self.game_board_frame.setMaximumSize(self.board_width, self.board_height)
-        self.game_board_frame.setObjectName("game_board_frame")
-        self.h_layout.addWidget(self.game_board_frame)
-
-        self.game_board_frame.restart_game_signal.connect(self.restartGame)
-
-        self.stat_frame = StatFrame(self, self.game_board_frame, self.stat_font_size)
-        self.stat_frame.setMinimumSize(self.stat_width, self.stat_height)
-        self.stat_frame.setMaximumSize(self.stat_width, self.stat_height)
-        self.stat_frame.setObjectName("stat_frame")
-        self.h_layout.addWidget(self.stat_frame)
-
-        #self.v_layout = QVBoxLayout(self)
-        #self.v_layout.addLayout(self.h_layout)
-#
-        #self.decision_frame = DecisionFrame(self)
-        #self.decision_frame.setMinimumSize(self.decision_width, self.decision_height)
-        #self.decision_frame.setMaximumSize(self.decision_width, self.decision_height)
-        #self.decision_frame.setObjectName("decision_frame")
-        #self.v_layout.addWidget(self.decision_frame)
-#
-        self.setLayout(self.h_layout)
-
-        self.game_board_frame.setFocus()
-
-    def endGame(self):
-        pass
 
 class BattleCity(QMainWindow):
+    #restart_game_signal = pyqtSignal(int)
+    restart_game_signal = pyqtSignal(int, object, object, int)
 
     def __init__(self):
         super(BattleCity, self).__init__()
 
-        #flags = Qt.WindowFlags() & ~Qt.WindowMinimizeButtonHint
-        #self.setWindowFlags(flags)
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon('./images/tank_icon.png'))
         self.setWindowTitle("Battle City")
@@ -95,7 +27,8 @@ class BattleCity(QMainWindow):
         self.stat_height = 675
 
         self.stat_font_size = 2
-        self.form_widget = None
+        self.main_window_layout = None
+        self.mode = None
 
         self.initUI()
         self.classicPalette()
@@ -192,14 +125,14 @@ class BattleCity(QMainWindow):
         self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
 
     def toggleEndGame(self, mode):
-        print("end game")
+        print("toggleEndGame")
         #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
         #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
+        self.endGame()
 
     def toggleRestartGame(self, mode):
-        print("restart game")
-        #self.status_bar.showMessage("MODE: ONLINE_CLIENT")
-        #self.startNewGame(GameMode.MULTIPLAYER_ONLINE_CLIENT)
+        print("toggleRestartGame")
+        self.restartGame()
     #endregion
 
     #region TOGGLE_PALETTES
@@ -231,8 +164,8 @@ class BattleCity(QMainWindow):
             }
         """)
         self.setStyle(self.style())
-        if self.form_widget is not None:
-            self.form_widget.stat_frame.fontSizeChange()
+        if self.main_window_layout is not None:
+            self.main_window_layout.stat_frame.fontSizeChange()
 
     def coldWhisperPalette(self):
         self.setStyleSheet("""
@@ -262,8 +195,8 @@ class BattleCity(QMainWindow):
             }
         """)
         self.setStyle(self.style())
-        if self.form_widget is not None:
-            self.form_widget.stat_frame.fontSizeChange()
+        if self.main_window_layout is not None:
+            self.main_window_layout.stat_frame.fontSizeChange()
 
     def raspberryBushPalette(self):
         self.setStyleSheet("""
@@ -293,8 +226,8 @@ class BattleCity(QMainWindow):
             }
         """)
         self.setStyle(self.style())
-        if self.form_widget is not None:
-            self.form_widget.stat_frame.fontSizeChange()
+        if self.main_window_layout is not None:
+            self.main_window_layout.stat_frame.fontSizeChange()
     #endregion
 
     #region TOGGLE_WINDOW_SIZE
@@ -308,13 +241,13 @@ class BattleCity(QMainWindow):
 
         self.setFixedSize(self.main_window_width, self.main_window_height);
         self.resize(self.main_window_width, self.main_window_height)
-        self.setCentralWidget(self.form_widget)
+        self.setCentralWidget(self.main_window_layout)
 
         self.stat_font_size = 1
-        if self.form_widget is not None:
-            if self.form_widget.stat_frame is not None:
-                self.form_widget.stat_frame.font_size = self.stat_font_size
-                self.form_widget.stat_frame.fontSizeChange()
+        if self.main_window_layout is not None:
+            if self.main_window_layout.stat_frame is not None:
+                self.main_window_layout.stat_frame.font_size = self.stat_font_size
+                self.main_window_layout.stat_frame.fontSizeChange()
 
     def mediumWindow(self):
         self.main_window_width = 1600
@@ -326,13 +259,13 @@ class BattleCity(QMainWindow):
 
         self.setFixedSize(self.main_window_width, self.main_window_height);
         self.resize(self.main_window_width, self.main_window_height)
-        self.setCentralWidget(self.form_widget)
+        self.setCentralWidget(self.main_window_layout)
 
         self.stat_font_size = 2
-        if self.form_widget is not None:
-            if self.form_widget.stat_frame is not None:
-                self.form_widget.stat_frame.font_size = self.stat_font_size
-                self.form_widget.stat_frame.fontSizeChange()
+        if self.main_window_layout is not None:
+            if self.main_window_layout.stat_frame is not None:
+                self.main_window_layout.stat_frame.font_size = self.stat_font_size
+                self.main_window_layout.stat_frame.fontSizeChange()
 
     def largeWindow(self):
         self.main_window_width = 1760
@@ -344,22 +277,36 @@ class BattleCity(QMainWindow):
 
         self.setFixedSize(self.main_window_width, self.main_window_height);
         self.resize(self.main_window_width, self.main_window_height)
-        self.setCentralWidget(self.form_widget)
+        self.setCentralWidget(self.main_window_layout)
 
         self.stat_font_size = 3
-        if self.form_widget is not None:
-            if self.form_widget.stat_frame is not None:
-                self.form_widget.stat_frame.font_size = self.stat_font_size
-                self.form_widget.stat_frame.fontSizeChange()
+        if self.main_window_layout is not None:
+            if self.main_window_layout.stat_frame is not None:
+                self.main_window_layout.stat_frame.font_size = self.stat_font_size
+                self.main_window_layout.stat_frame.fontSizeChange()
     #endregion
 
-    def startNewGame(self, mode):
-        self.form_widget = MainWindowWidget(self,
-                                            mode,
-                                           (self.board_width, self.board_height),
-                                           (self.stat_width, self.stat_height),
-                                           self.stat_font_size)
-        self.setCentralWidget(self.form_widget)
+    def startNewGame(self, mode=None):
+        if mode is None:
+            mode = 2
+        self.mode = mode
+
+        if self.main_window_layout is None:
+            print("is none")
+            self.main_window_layout = MainWindowLayout(self,
+                                                       self.mode,
+                                                       (self.board_width, self.board_height),
+                                                       (self.stat_width, self.stat_height),
+                                                       self.stat_font_size)
+        else:
+            print("is NOT none")
+            self.restart_game_signal.emit(self.mode,
+                                          (self.board_width, self.board_height),
+                                          (self.stat_width, self.stat_height),
+                                          self.stat_font_size)
+
+
+        self.setCentralWidget(self.main_window_layout)
 
         self.menu_bar.start_game.setEnabled(False)
         self.menu_bar.theme_menu.setEnabled(False)
@@ -377,19 +324,37 @@ class BattleCity(QMainWindow):
 
     def restartGame(self):
         print("restartGame")
-        # self.parent_widget.clearBoard()
-        #self.parent_widget.move_player_1_thread.cancel()
-        #if self.parent_widget.mode == 2:
-        #    self.parent_widget.move_player_2_thread.cancel()
-        #self.parent_widget.move_bullets_thread.cancel()
-        #self.parent_widget.restart_game_signal.emit()
+
+        if self.main_window_layout is not None:
+            self.main_window_layout.cancel_threads_signal.emit()
+
+            self.main_window_layout.game_board_frame.hide()
+            self.main_window_layout.stat_frame.hide()
+
+            self.menu_bar.start_game.setEnabled(False)
+            self.menu_bar.theme_menu.setEnabled(False)
+            self.menu_bar.window_size_menu.setEnabled(False)
+            self.menu_bar.restart_game_act.setEnabled(True)
+            self.menu_bar.end_game_act.setEnabled(True)
+
+            self.restart_game_signal.emit(self.mode,
+                                          (self.board_width, self.board_height),
+                                          (self.stat_width, self.stat_height),
+                                          self.stat_font_size)
 
     def endGame(self):
         print("endGame")
-        #self.parent_widget.move_player_1_thread.cancel()
-        #if self.parent_widget.mode == 2:
-        #    self.parent_widget.move_player_2_thread.cancel()
-        #self.parent_widget.move_bullets_thread.cancel()
+        if self.main_window_layout is not None:
+            self.main_window_layout.cancel_threads_signal.emit()
+
+            self.main_window_layout.game_board_frame.hide()
+            self.main_window_layout.stat_frame.hide()
+
+            self.menu_bar.start_game.setEnabled(True)
+            self.menu_bar.theme_menu.setEnabled(True)
+            self.menu_bar.window_size_menu.setEnabled(True)
+            self.menu_bar.restart_game_act.setEnabled(True)
+            self.menu_bar.end_game_act.setEnabled(False)
 
 if __name__ == "__main__":
     app = QApplication([])

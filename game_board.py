@@ -20,11 +20,6 @@ import pickle
 from communication_thread import CommunicationThread
 
 class GameBoard(QFrame):
-    #TODO: refactor ovo staviti negde
-    BoardWidth = 32
-    BoardHeight = 18
-    mutex = QMutex()
-
     change_lives_signal = pyqtSignal(int, int)
     change_level_signal = pyqtSignal()
     change_enemies_left_signal = pyqtSignal(int)
@@ -33,11 +28,18 @@ class GameBoard(QFrame):
     game_over_tool_bar_signal = pyqtSignal()
     game_over_signal = pyqtSignal()
 
-    # tile width/height in px
-    TILE_SIZE = 16
-
     def __init__(self, parent, mode):
         super(GameBoard, self).__init__(parent)
+
+        self.parent_widget = parent
+
+        self.BoardWidth = 32
+        self.BoardHeight = 18
+        self.mutex = QMutex()
+
+        # tile width/height in px
+        self.TILE_SIZE = 16
+
         self.mode = mode
         self.commands_1 = []
         self.commands_2 = []
@@ -46,7 +48,8 @@ class GameBoard(QFrame):
         self.bullets_list = []
 
         self.socket = None
-        if mode is GameMode.MULTIPLAYER_ONLINE_HOST or mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+
+        if mode == GameMode.MULTIPLAYER_ONLINE_HOST or mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.communnication = Communication(mode)
             if self.communnication.socket is not None:
                 self.socket = self.communnication.socket
@@ -61,18 +64,18 @@ class GameBoard(QFrame):
     def initGameBoard(self):
         self.num_of_all_enemies = 7
         self.num_of_enemies_per_level = 4
-        self.current_level = 1
+        self.current_level = 9
         self.force_x = None
         self.force_y = None
         self.enemies_increaser = 0
 
-        if self.mode is GameMode.SINGLEPLAYER:
+        if self.mode == GameMode.SINGLEPLAYER:
             self.initSingleplayer()
-        elif self.mode is GameMode.MULTIPLAYER_OFFLINE:
+        elif self.mode == GameMode.MULTIPLAYER_OFFLINE:
             self.initMultiplayerOffline()
-        elif self.mode is GameMode.MULTIPLAYER_ONLINE_HOST:
+        elif self.mode == GameMode.MULTIPLAYER_ONLINE_HOST:
             self.initMultiplayerOnlineHost()
-        elif self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.initMultiplayerOnlineClient()
 
     def initSingleplayer(self):
@@ -111,8 +114,8 @@ class GameBoard(QFrame):
 
         self.ex_pipe, self.in_pipe = Pipe()
         self.deux_ex_machina_process = DeuxExMachina(pipe=self.ex_pipe,
-                                                     boardWidth=GameBoard.BoardWidth,
-                                                     boardHeight=GameBoard.BoardHeight)
+                                                     boardWidth=self.BoardWidth,
+                                                     boardHeight=self.BoardHeight)
 
         self.deux_ex_machina_thread = DeuxExMachinaThread(self)
         # endregion
@@ -162,8 +165,8 @@ class GameBoard(QFrame):
 
         self.ex_pipe, self.in_pipe = Pipe()
         self.deux_ex_machina_process = DeuxExMachina(pipe=self.ex_pipe,
-                                                     boardWidth=GameBoard.BoardWidth,
-                                                     boardHeight=GameBoard.BoardHeight)
+                                                     boardWidth=self.BoardWidth,
+                                                     boardHeight=self.BoardHeight)
 
         self.deux_ex_machina_thread = DeuxExMachinaThread(self)
         # endregion
@@ -214,8 +217,8 @@ class GameBoard(QFrame):
 
         self.ex_pipe, self.in_pipe = Pipe()
         self.deux_ex_machina_process = DeuxExMachina(pipe=self.ex_pipe,
-                                                     boardWidth=GameBoard.BoardWidth,
-                                                     boardHeight=GameBoard.BoardHeight)
+                                                     boardWidth=self.BoardWidth,
+                                                     boardHeight=self.BoardHeight)
 
         self.deux_ex_machina_thread = DeuxExMachinaThread(self)
         #endregion
@@ -284,7 +287,7 @@ class GameBoard(QFrame):
     # region EVENTS
     def showEvent(self, *args, **kwargs):
         #print("show event")
-        if self.mode is not GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        if self.mode != GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.setPlayersForNextLevel()
 
             for enemy in self.enemy_dictionary:
@@ -294,7 +297,7 @@ class GameBoard(QFrame):
                 self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
 
 
-        if self.mode is GameMode.SINGLEPLAYER:
+        if self.mode == GameMode.SINGLEPLAYER:
             self.move_player_1_thread.start()
             #self.move_player_2_thread.start()
             self.move_enemy_thread.start()
@@ -302,7 +305,7 @@ class GameBoard(QFrame):
             self.deux_ex_machina_process.start()
             self.deux_ex_machina_thread.start()
 
-        elif self.mode is GameMode.MULTIPLAYER_OFFLINE:
+        elif self.mode == GameMode.MULTIPLAYER_OFFLINE:
             self.move_player_1_thread.start()
             self.move_player_2_thread.start()
             self.move_enemy_thread.start()
@@ -310,7 +313,7 @@ class GameBoard(QFrame):
             self.deux_ex_machina_process.start()
             self.deux_ex_machina_thread.start()
 
-        elif self.mode is GameMode.MULTIPLAYER_ONLINE_HOST:
+        elif self.mode == GameMode.MULTIPLAYER_ONLINE_HOST:
             self.move_player_1_thread.start()
             #self.move_player_2_thread.start()
             self.move_enemy_thread.start()
@@ -318,7 +321,7 @@ class GameBoard(QFrame):
             self.deux_ex_machina_process.start()
             self.deux_ex_machina_thread.start()
 
-        elif self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             self.communnication_thread.start()
             #self.move_player_1_thread.start()
             #self.move_player_2_thread.start()
@@ -326,14 +329,15 @@ class GameBoard(QFrame):
             #self.deux_ex_machina_process.start()
             #self.deux_ex_machina_thread.start()
 
+        self.parent_widget.cancel_threads_signal.connect(self.cancelThreads)
 
     def paintEvent(self, QPaintEvent):
         painter = QPainter(self)
         rect = self.contentsRect()
-        board_top = rect.bottom() - GameBoard.BoardHeight * self.getSquareHeight()
+        board_top = rect.bottom() - self.BoardHeight * self.getSquareHeight()
         self.mutex.lock()
-        for i in range(GameBoard.BoardHeight):
-            for j in range(GameBoard.BoardWidth):
+        for i in range(self.BoardHeight):
+            for j in range(self.BoardWidth):
                 shape_type = self.getShapeType(j, i)
                 if shape_type == ElementType.WALL:
                     self.drawSquare(painter,
@@ -452,7 +456,7 @@ class GameBoard(QFrame):
                                        event.key() == Qt.Key_Left or  \
                                        event.key() == Qt.Key_Right or \
                                        event.key() == Qt.Key_Space:
-            if self.mode is not GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            if self.mode != GameMode.MULTIPLAYER_ONLINE_CLIENT:
                 self.commands_1.append(event.key())
             else:
                 self.sendCommand(event.key())
@@ -467,7 +471,7 @@ class GameBoard(QFrame):
                                        event.key() == Qt.Key_Left or  \
                                        event.key() == Qt.Key_Right or \
                                        event.key() == Qt.Key_Space:
-            if self.mode is not GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            if self.mode != GameMode.MULTIPLAYER_ONLINE_CLIENT:
                 self.commands_1.remove(event.key())
         elif event.key() == Qt.Key_W or event.key() == Qt.Key_S or \
                                         event.key() == Qt.Key_A or \
@@ -493,7 +497,7 @@ class GameBoard(QFrame):
 
     #region EVIDENTION_METHODS
     def setShapeAt(self, x, y, shape_type):
-        self.board[(y * GameBoard.BoardWidth) + x] = shape_type
+        self.board[(y * self.BoardWidth) + x] = shape_type
 
     def setInitialMap(self):
         self.loadLevel(self.current_level)
@@ -506,7 +510,8 @@ class GameBoard(QFrame):
         if level_nr == 0:
             filename = "levels/game_over.txt"
         else:
-            filename = "levels/"+str(level_nr)+".txt"
+            #filename = "levels/"+str(level_nr)+".txt"
+            filename = "levels/9.txt"
 
         if not os.path.isfile(filename):
             return False
@@ -526,7 +531,7 @@ class GameBoard(QFrame):
                     self.player_1.setCoordinates(x, y)
                     self.player_1_starting_position = (x, y)
                     self.setShapeAt(x, y, ElementType.PLAYER1)
-                elif ch == "2" and self.mode is not GameMode.SINGLEPLAYER and self.player_2.lives > 0:
+                elif ch == "2" and self.mode != GameMode.SINGLEPLAYER and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
                     self.player_2_starting_position = (x, y)
                     self.setShapeAt(x, y, ElementType.PLAYER2)
@@ -556,7 +561,7 @@ class GameBoard(QFrame):
             self.setShapeAt(enemy.x, enemy.y, ElementType.ENEMY)
             self.enemy_dictionary[enemy].show()
 
-        if self.current_level >= 6:
+        if self.current_level >= 9:
             self.current_level = 0
 
         self.enemies_increaser += 1
@@ -694,8 +699,8 @@ class GameBoard(QFrame):
         if len(self.board) > 0:
             self.board.clear()
 
-        for i in range(GameBoard.BoardHeight):
-            for j in range(GameBoard.BoardWidth):
+        for i in range(self.BoardHeight):
+            for j in range(self.BoardWidth):
                 self.board.append(ElementType.NONE)
         self.update()
     #endregion
@@ -703,13 +708,13 @@ class GameBoard(QFrame):
 
     #region GET_METHODS
     def getShapeType(self, x, y):
-        return self.board[(y * GameBoard.BoardWidth) + x]
+        return self.board[(y * self.BoardWidth) + x]
 
     def getSquareWidth(self):
-        return self.contentsRect().width() // GameBoard.BoardWidth
+        return self.contentsRect().width() // self.BoardWidth
 
     def getSquareHeight(self):
-        return self.contentsRect().height() // GameBoard.BoardHeight
+        return self.contentsRect().height() // self.BoardHeight
 
     def findBulletAt(self, x, y):
         for bullet in self.bullet_dictionary:
@@ -856,77 +861,77 @@ class GameBoard(QFrame):
             pix = QPixmap('./images/freeze.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER1 and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER1 and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank1.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER2 and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER2 and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank2.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.ENEMY_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.ENEMY_UP and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/enemy0.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.ENEMY_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.ENEMY_RIGHT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/enemy1.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.ENEMY_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.ENEMY_DOWN and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/enemy2.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.ENEMY_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.ENEMY_LEFT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/enemy3.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.BULLET_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.BULLET_UP and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/flying_bullet0.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.BULLET_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.BULLET_RIGHT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/flying_bullet1.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.BULLET_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.BULLET_DOWN and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/flying_bullet2.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.BULLET_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.BULLET_LEFT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/flying_bullet3.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
 
-        elif type == ElementType.PLAYER1_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER1_UP and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank10.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER1_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER1_RIGHT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank11.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER1_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER1_DOWN and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank12.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER1_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER1_LEFT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank13.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
 
-        elif type == ElementType.PLAYER2_UP and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER2_UP and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank20.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER2_RIGHT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER2_RIGHT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank21.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER2_DOWN and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER2_DOWN and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank22.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
-        elif type == ElementType.PLAYER2_LEFT and self.mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif type == ElementType.PLAYER2_LEFT and self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             pix = QPixmap('./images/tank23.png')
             pix1 = pix.scaled(self.getSquareWidth(), self.getSquareHeight())
             painter.drawPixmap(x + 1, y + 1, pix1)
@@ -935,7 +940,7 @@ class GameBoard(QFrame):
         rect = self.contentsRect()
         height = self.getSquareHeight()
         bottom = rect.bottom()
-        board_top = rect.bottom() - GameBoard.BoardHeight * self.getSquareHeight()
+        board_top = rect.bottom() - self.BoardHeight * self.getSquareHeight()
         label.setGeometry(rect.left() + x * self.getSquareWidth(),
                           board_top + y * self.getSquareHeight(),
                           self.getSquareWidth(),
@@ -943,3 +948,17 @@ class GameBoard(QFrame):
 
     def gameOver(self):
         self.game_over_signal.emit()
+
+    def cancelThreads(self):
+        self.mutex.lock()
+        if not self.move_player_1_thread.was_canceled:
+            self.move_player_1_thread.cancel()
+        if self.mode == 2 and not self.move_player_2_thread.was_canceled:
+            self.move_player_2_thread.cancel()
+        if not self.move_enemy_thread.was_canceled:
+            self.move_enemy_thread.cancel()
+        if not self.move_bullets_thread.was_canceled:
+            self.move_bullets_thread.cancel()
+        if not self.deux_ex_machina_thread.was_canceled:
+            self.deux_ex_machina_thread.cancel()
+        self.mutex.unlock()

@@ -18,6 +18,9 @@ class Helper:
             if (element_type is ElementType.PLAYER1) or (element_type is ElementType.PLAYER2) or (element_type is ElementType.ENEMY):
                 if next_position_shape is ElementType.NONE:
                     is_collision = False
+                else:
+                    if (element_type is ElementType.PLAYER1) or (element_type is ElementType.PLAYER2):
+                        print(f"player source({element_type}) collision: {next_position_shape}")
 
             elif element_type is ElementType.BULLET:
                 if next_position_shape is ElementType.NONE:

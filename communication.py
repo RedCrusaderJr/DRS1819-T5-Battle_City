@@ -9,7 +9,7 @@ class Communication:
         PORT = 50005
         self.socket = None
         self.conn = None
-        if mode is GameMode.MULTIPLAYER_ONLINE_HOST:
+        if mode == GameMode.MULTIPLAYER_ONLINE_HOST:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.bind((HOST, PORT))
             self.socket.listen(2)
@@ -19,7 +19,7 @@ class Communication:
             self.conn2, self.addr2 = self.socket.accept()
             print(f"client2 accepted -> address: {self.addr2}")
 
-        elif mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+        elif mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
             print("Legen... wait for it...")
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((CLIENT_HOST, PORT))
