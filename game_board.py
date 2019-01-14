@@ -48,9 +48,8 @@ class GameBoard(QFrame):
         self.bullets_list = []
 
         self.socket = None
-
-        if mode == GameMode.MULTIPLAYER_ONLINE_HOST or mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
-            self.communnication = Communication(mode)
+        if mode is GameMode.MULTIPLAYER_ONLINE_HOST or mode is GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            self.communnication = Communication(mode, 50005)
             if self.communnication.socket is not None:
                 self.socket = self.communnication.socket
                 self.conn = self.communnication.conn
@@ -322,6 +321,7 @@ class GameBoard(QFrame):
             self.deux_ex_machina_thread.start()
 
         elif self.mode == GameMode.MULTIPLAYER_ONLINE_CLIENT:
+            self.communnication_thread.update_signal.connect(self.update)
             self.communnication_thread.start()
             #self.move_player_1_thread.start()
             #self.move_player_2_thread.start()
@@ -492,8 +492,10 @@ class GameBoard(QFrame):
         elif key == Qt.Key_Space:
             msg = "FIRE"
 
-        self.socket.sendall(msg.encode('utf8'))
-
+        try:
+            self.socket.sendall(msg.encode('utf8'))
+        except:
+            pass
 
     #region EVIDENTION_METHODS
     def setShapeAt(self, x, y, shape_type):

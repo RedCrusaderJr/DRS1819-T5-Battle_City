@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QFrame
-from PyQt5.QtCore import QMutex
+from PyQt5.QtCore import QMutex, pyqtSignal
 from communication import Communication
-from enums import GameMode, ElementType, PlayerType
+from enums import GameMode, ElementType, PlayerType, Orientation
 from tank import Tank
 import os
 from random import sample
@@ -10,16 +10,23 @@ import pickle
 from move_enemy_thread_mp import MoveEnemyThreadMP
 from move_bullets_thread_mp import MoveBulletsThreadMP
 from move_player_thread_mp import MovePlayerThreadMP
+import struct
+import socket
+from deux_ex_machina import DeuxExMachina
+from deux_ex_machina_thread import DeuxExMachinaThread
+from multiprocessing import Pipe
+
 
 class GameServerFrame(QFrame):
     BoardWidth = 32
     BoardHeight = 18
     mutex = QMutex()
+    speed_up_signal = pyqtSignal()
 
-    def __init__(self, parent):
+    def __init__(self, parent, port):
         super().__init__(parent)
-
-        self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST)
+        self.parent_widget = parent
+        self.communication = Communication(GameMode.MULTIPLAYER_ONLINE_HOST, port)
 
         self.board = []
 
@@ -32,6 +39,13 @@ class GameServerFrame(QFrame):
         self.move_player_thread_mp1.start()
         self.move_player_thread_mp2 = MovePlayerThreadMP(2, self)
         self.move_player_thread_mp2.start()
+        self.ex_pipe, self.in_pipe = Pipe()
+
+        self.deux_ex_machina_process = DeuxExMachina(pipe=self.ex_pipe, boardWidth=GameServerFrame.BoardWidth, boardHeight=GameServerFrame.BoardHeight)
+        self.deux_ex_machina_process.start()
+
+        self.deux_ex_machina_thread = DeuxExMachinaThread(self, True)
+        self.deux_ex_machina_thread.start()
 
     def initGameBoard(self):
         self.num_of_all_enemies = 7
@@ -63,11 +77,49 @@ class GameServerFrame(QFrame):
             self.setShapeAt(self.enemy_list[i].x, self.enemy_list[i].y, ElementType.ENEMY)
         self.sendBoard()
 
+    def send_msg(self, sock, msg):
+        # Prefix each message with a 4-byte length (network byte order)
+        print("Poslato")
+        msg = struct.pack('>I', len(msg)) + msg
+        sock.sendall(msg)
+
     def sendBoard(self):
         id = "GAMEBOARD_INIT"
         data = pickle.dumps((id, self.board), -1)
-        self.communication.conn1.sendall(data)
-        self.communication.conn2.sendall(data)
+
+        self.send_msg(self.communication.conn1, data)
+        self.send_msg(self.communication.conn2, data)
+
+    def updateLevel(self):
+        data = pickle.dumps((str("UPDATE_LEVEL"), (self.num_of_all_enemies, self.current_level)), -1)
+
+        self.send_msg(self.communication.conn1, data)
+        self.send_msg(self.communication.conn2, data)
+
+    def sendWinner(self, player):
+        self.loadLevel(-1)
+        data = pickle.dumps((str("WINNER"), (self.board, self.parent_widget.port)), -1)
+        if player == 1:
+            self.send_msg(self.communication.conn1, data)
+            self.communication.conn1.shutdown(socket.SHUT_RDWR)
+            self.communication.conn1.close()
+        else:
+            self.send_msg(self.communication.conn2, data)
+            self.communication.conn2.shutdown(socket.SHUT_RDWR)
+            self.communication.conn2.close()
+
+
+    def sendLoser(self, player):
+        self.loadLevel(-2)
+        data = pickle.dumps((str("LOSER"), self.board), -1)
+        if player == 1:
+            self.send_msg(self.communication.conn1, data)
+            self.communication.conn1.shutdown(socket.SHUT_RDWR)
+            self.communication.conn1.close()
+        else:
+            self.send_msg(self.communication.conn2, data)
+            self.communication.conn2.shutdown(socket.SHUT_RDWR)
+            self.communication.conn2.close()
 
     def getShapeType(self, x, y):
         return self.board[(y * GameServerFrame.BoardWidth) + x]
@@ -90,6 +142,10 @@ class GameServerFrame(QFrame):
         """
         if level_nr == 0:
             filename = "levels/game_over.txt"
+        elif level_nr == -1:
+            filename = "levels/winner.txt"
+        elif level_nr == -2:
+            filename = "levels/loser.txt"
         else:
             filename = "levels/"+str(level_nr)+".txt"
 
@@ -109,10 +165,12 @@ class GameServerFrame(QFrame):
                     self.setShapeAt(x, y, ElementType.BASE)
                 elif ch == "1" and self.player_1.lives > 0:
                     self.player_1.setCoordinates(x, y)
+                    self.player_1.orientation = Orientation.UP
                     self.player_1_starting_position = (x, y)
                     self.setShapeAt(x, y, ElementType.PLAYER1_UP)
                 elif ch == "2" and self.player_2.lives > 0:
                     self.player_2.setCoordinates(x, y)
+                    self.player_2.orientation = Orientation.UP
                     self.player_2_starting_position = (x, y)
                     self.setShapeAt(x, y, ElementType.PLAYER2_UP)
                 x += 1
@@ -124,3 +182,67 @@ class GameServerFrame(QFrame):
         for bullet in self.bullet_list:
             if bullet.x == x and bullet.y == y:
                 return bullet
+
+    def findEnemyAt(self, x, y):
+        for enemy in self.enemy_list:
+            if enemy.x == x and enemy.y == y:
+                return enemy
+
+    def gameOver(self):
+        self.enemy_list = []
+        self.bullet_list = []
+
+        self.move_player_thread_mp1.cancel()
+        self.move_player_thread_mp2.cancel()
+        self.move_enemy_thread_mp.cancel()
+        self.move_bullets_thread_mp.cancel()
+        if self.player_1.lives == 0:
+            self.sendLoser(1)
+            self.sendWinner(2)
+        elif self.player_2.lives == 0:
+            self.sendLoser(2)
+            self.sendWinner(1)
+        elif self.player_1.lives > self.player_2.lives:
+            self.sendLoser(2)
+            self.sendWinner(1)
+        elif self.player_1.lives < self.player_2.lives:
+            self.sendLoser(1)
+            self.sendWinner(2)
+        else:
+            self.sendLoser(2)
+            self.sendWinner(1)
+
+    def advanceToNextLevel(self):
+        for bullet in self.bullet_list:
+            self.setShapeAt(bullet.x, bullet.y, ElementType.NONE)
+
+        self.bullet_list = []
+        self.player_2.active_bullet = None
+        self.player_1.active_bullet = None
+
+        self.current_level += 1
+        if (self.current_level > 6):
+            self.current_level = 1
+        self.loadLevel(self.current_level)
+
+        self.random_values = []
+        self.random_values = sample(range(1, 32), self.num_of_enemies_per_level)
+
+        for i in range(self.num_of_enemies_per_level):
+            self.enemy_list.append(EnemyTank(self.random_values[i]))
+            self.setShapeAt(self.enemy_list[i].x, self.enemy_list[i].y, ElementType.ENEMY)
+
+        self.enemies_increaser += 1
+
+        self.num_of_all_enemies = 7 + self.enemies_increaser
+
+        self.speed_up_signal.emit()
+
+        self.sendBoard()
+
+        self.updateLevel()
+
+        #TODO FORCE
+
+
+
